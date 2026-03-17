@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/fund/:slug",
+      "destination": "/index.html"
+    }
+  ]
+}
