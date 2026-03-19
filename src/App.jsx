@@ -2941,11 +2941,23 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
   const [funds, setFunds] = useState([]);
   const [loadingFunds, setLoadingFunds] = useState(true);
 
-  // Fetch user's funds from Supabase on mount
+  // Fetch user's funds from Supabase on mount, with real contribution totals
   useEffect(() => {
     setLoadingFunds(true);
-    loadFundsByCreator().then(({ funds: fetchedFunds }) => {
-      setFunds(fetchedFunds || []);
+    loadFundsByCreator().then(async ({ funds: fetchedFunds }) => {
+      if (!fetchedFunds || fetchedFunds.length === 0) {
+        setFunds([]);
+        setLoadingFunds(false);
+        return;
+      }
+      // For each fund, fetch contributions to get accurate totals
+      const enriched = await Promise.all(fetchedFunds.map(async (fund) => {
+        const { contributions } = await getContributions(fund.id);
+        const totalRaised = (contributions || []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+        const count = (contributions || []).length;
+        return { ...fund, raised_amount: totalRaised, supporter_count: count };
+      }));
+      setFunds(enriched);
       setLoadingFunds(false);
     }).catch(() => setLoadingFunds(false));
   }, []);
@@ -3365,13 +3377,24 @@ function GuardianReviewFund({ data, setData, goTo }) {
                   >
                     Confirm you've received
                   </button>
-                  <button style={{
-                    backgroundColor: T.color.white, border: "2px solid #d6ff76",
-                    borderRadius: 4, padding: "8px 16px", cursor: "pointer",
-                    fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
-                    color: T.color.primary,
-                  }}>
-                    More
+                  <button
+                    onClick={() => {
+                      const updated = donations.filter(d => d.id !== donation.id);
+                      setData(prev => ({
+                        ...prev,
+                        donations: updated,
+                        pendingContribution: Math.max(0, (prev.pendingContribution || 0) - donation.amount),
+                        supporterCount: Math.max(0, (prev.supporterCount || 0) - 1),
+                      }));
+                    }}
+                    style={{
+                      backgroundColor: T.color.white, border: "2px solid #d6ff76",
+                      borderRadius: 4, padding: "8px 16px", cursor: "pointer",
+                      fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
+                      color: T.color.primary,
+                    }}
+                  >
+                    Ignore
                   </button>
                 </div>
               ) : (
