@@ -2973,6 +2973,23 @@ function GuardianHome({ data, goTo, goHome, isSignedIn }) {
           </h1>
         </div>
 
+        {/* Create a fund button */}
+        <div style={{ padding: "0 16px" }}>
+          <button
+            onClick={() => goTo(0)}
+            style={{
+              width: "100%", height: 60, borderRadius: T.radius.circle,
+              background: "linear-gradient(90deg, #d6ff76, #eafe7e)",
+              border: "none", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
+              color: T.color.primary,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            Create a fund
+          </button>
+        </div>
+
         {/* Hosting section */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 16px" }}>
           <h2 style={{
