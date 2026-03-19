@@ -25,6 +25,65 @@ export const supabase = supabaseUrl && supabaseAnonKey
 
 
 // ============================================================
+// AUTH: Sign up a new user
+// Creates an account with email + password, stores name in metadata
+// Returns { user, error }
+// ============================================================
+export async function signUpUser({ email, password, firstName, lastName }) {
+  if (!supabase) return { user: null, error: "Supabase not configured" };
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { first_name: firstName, last_name: lastName },
+    },
+  });
+
+  return { user: data?.user || null, session: data?.session || null, error };
+}
+
+
+// ============================================================
+// AUTH: Sign in an existing user
+// Returns { user, error }
+// ============================================================
+export async function signInUser({ email, password }) {
+  if (!supabase) return { user: null, error: "Supabase not configured" };
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  return { user: data?.user || null, session: data?.session || null, error };
+}
+
+
+// ============================================================
+// AUTH: Get the currently signed-in user (from stored session)
+// Call on app load to restore session
+// Returns { user, error }
+// ============================================================
+export async function getCurrentUser() {
+  if (!supabase) return { user: null, error: "Supabase not configured" };
+
+  const { data: { user }, error } = await supabase.auth.getUser();
+  return { user, error };
+}
+
+
+// ============================================================
+// AUTH: Sign out
+// ============================================================
+export async function signOutUser() {
+  if (!supabase) return { error: "Supabase not configured" };
+  const { error } = await supabase.auth.signOut();
+  return { error };
+}
+
+
+// ============================================================
 // Helper: Generate a URL-friendly slug from a fund title
 // "Help Jason Recover" → "help-jason-recover"
 // Appends a short random suffix to avoid collisions
@@ -46,11 +105,15 @@ export function generateSlug(title) {
 
 // ============================================================
 // API: Create a new fund
-// Called after the setup flow is complete (screen 8 → 9)
+// Links the fund to the authenticated user via creator_id
 // Returns { fund, error }
 // ============================================================
 export async function createFund(data) {
   if (!supabase) return { fund: null, error: "Supabase not configured" };
+
+  // Get the current user's ID to link this fund to their account
+  const { data: { user } } = await supabase.auth.getUser();
+  const creatorId = user?.id || null;
 
   const slug = generateSlug(data.title || "summa-fund");
 
@@ -58,6 +121,7 @@ export async function createFund(data) {
     .from("funds")
     .insert({
       slug,
+      creator_id: creatorId,
       fund_for: data.fundFor,
       first_name: data.firstName || "",
       last_name: data.lastName || "",
@@ -90,6 +154,27 @@ export async function loadFundBySlug(slug) {
     .single();
 
   return { fund, error };
+}
+
+
+// ============================================================
+// API: Load all funds created by the current user
+// Used on GuardianHome dashboard
+// Returns { funds, error }
+// ============================================================
+export async function loadFundsByCreator() {
+  if (!supabase) return { funds: [], error: "Supabase not configured" };
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { funds: [], error: "Not signed in" };
+
+  const { data: funds, error } = await supabase
+    .from("funds")
+    .select("*")
+    .eq("creator_id", user.id)
+    .order("created_at", { ascending: false });
+
+  return { funds: funds || [], error };
 }
 
 

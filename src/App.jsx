@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-import { createFund, loadFundBySlug, recordContribution } from "./supabaseClient";
+import { signUpUser, signInUser, getCurrentUser, signOutUser, createFund, loadFundBySlug, loadFundsByCreator, recordContribution } from "./supabaseClient";
 
 // ============================================================
 // DESIGN TOKENS
@@ -3545,6 +3545,24 @@ export default function SummaFundSetup() {
   const [animating, setAnimating] = useState(false);
   const [returnTo, setReturnTo] = useState(null); // screen index to return to after editing
 
+  // ---- SESSION PERSISTENCE ----
+  // On app load, check if the user has an existing session (returning user)
+  useEffect(() => {
+    getCurrentUser().then(({ user }) => {
+      if (user) {
+        const meta = user.user_metadata || {};
+        setData(prev => ({
+          ...prev,
+          firstName: meta.first_name || prev.firstName || "",
+          lastName: meta.last_name || prev.lastName || "",
+          email: user.email || prev.email || "",
+          userId: user.id,
+        }));
+        setIsSignedIn(true);
+      }
+    });
+  }, []);
+
   // ---- URL ROUTING ----
   // If the URL is /fund/{slug}, load that fund from Supabase and show supporter view
   useEffect(() => {
@@ -3703,8 +3721,20 @@ export default function SummaFundSetup() {
     19: <GuardianHome data={data} goTo={goTo} goHome={goHome} isSignedIn={isSignedIn} />,
     20: <GuardianReviewFund data={data} setData={setData} goTo={goTo} />,
     21: <SignInScreen
-      onSignIn={({ email }) => {
-        setData(prev => ({ ...prev, email }));
+      onSignIn={async ({ email, password }) => {
+        const { user, error } = await signInUser({ email, password });
+        if (error) {
+          alert(typeof error === "string" ? error : error.message || "Sign in failed. Check your email and password.");
+          return;
+        }
+        const meta = user?.user_metadata || {};
+        setData(prev => ({
+          ...prev,
+          email,
+          firstName: meta.first_name || prev.firstName || "",
+          lastName: meta.last_name || prev.lastName || "",
+          userId: user?.id,
+        }));
         setIsSignedIn(true);
         goTo(19);
       }}
@@ -3719,8 +3749,13 @@ export default function SummaFundSetup() {
         <style>{`input::placeholder, textarea::placeholder { color: ${T.color.neutral700} !important; opacity: 1; }`}</style>
         {showSignUp ? (
           <SignUpScreen
-            onCreateAccount={({ firstName, lastName, email }) => {
-              setData(prev => ({ ...prev, firstName, lastName, email }));
+            onCreateAccount={async ({ firstName, lastName, email, password }) => {
+              const { user, error } = await signUpUser({ email, password, firstName, lastName });
+              if (error) {
+                alert(typeof error === "string" ? error : error.message || "Sign up failed. Please try again.");
+                return;
+              }
+              setData(prev => ({ ...prev, firstName, lastName, email, userId: user?.id }));
               setIsSignedIn(true);
               setShowStart(false);
               setShowSignUp(false);
@@ -3730,8 +3765,21 @@ export default function SummaFundSetup() {
           />
         ) : showSignIn ? (
           <SignInScreen
-            onSignIn={({ email }) => {
-              setData(prev => ({ ...prev, email }));
+            onSignIn={async ({ email, password }) => {
+              const { user, error } = await signInUser({ email, password });
+              if (error) {
+                alert(typeof error === "string" ? error : error.message || "Sign in failed. Check your email and password.");
+                return;
+              }
+              // Restore name from user metadata
+              const meta = user?.user_metadata || {};
+              setData(prev => ({
+                ...prev,
+                email,
+                firstName: meta.first_name || prev.firstName || "",
+                lastName: meta.last_name || prev.lastName || "",
+                userId: user?.id,
+              }));
               setIsSignedIn(true);
               setShowStart(false);
               setShowSignIn(false);
