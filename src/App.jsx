@@ -84,7 +84,7 @@ const GiveIcon = () => (
 // ============================================================
 
 // --- Swipe Button ---
-function SwipeButton({ text = "Swipe to give", onSwipeComplete }) {
+function SwipeButton({ text = "Swipe to give", onSwipeComplete, disabled = false }) {
   const trackRef = useRef(null);
   const [dragging, setDragging] = useState(false);
   const [offsetX, setOffsetX] = useState(0);
@@ -97,7 +97,7 @@ function SwipeButton({ text = "Swipe to give", onSwipeComplete }) {
   };
 
   const handleStart = (clientX) => {
-    if (completed) return;
+    if (completed || disabled) return;
     setDragging(true);
   };
 
@@ -137,10 +137,12 @@ function SwipeButton({ text = "Swipe to give", onSwipeComplete }) {
       style={{
         position: "relative",
         width: "100%", height: 56, borderRadius: T.radius.circle,
-        background: "#f4ffaa",
+        background: disabled ? T.color.neutral300 : "#f4ffaa",
         display: "flex", alignItems: "center", justifyContent: "center",
-        cursor: "grab", userSelect: "none",
+        cursor: disabled ? "default" : "grab", userSelect: "none",
         touchAction: "none",
+        opacity: disabled ? 0.5 : 1,
+        transition: "background 0.2s ease, opacity 0.2s ease",
       }}
     >
       {/* Thumb */}
@@ -148,10 +150,11 @@ function SwipeButton({ text = "Swipe to give", onSwipeComplete }) {
         position: "absolute", left: offsetX, top: 0,
         width: thumbSize, height: thumbSize,
         borderRadius: 16,
-        background: T.color.green, border: "1px solid #c2df00",
+        background: disabled ? T.color.neutral300 : T.color.green,
+        border: disabled ? `1px solid ${T.color.neutral500}` : "1px solid #c2df00",
         display: "flex", alignItems: "center", justifyContent: "center",
         zIndex: 2,
-        transition: dragging ? "none" : "left 0.3s ease",
+        transition: dragging ? "none" : "left 0.3s ease, background 0.2s ease",
       }}>
         <GiveIcon />
       </div>
@@ -253,12 +256,15 @@ function ProgressIndicator({ activeStep }) {
 }
 
 // --- Input Field ---
-function InputField({ label, value, onChange, multiline = false, characterCount = false, maxChars = 1000, focused = false }) {
+function InputField({ label, value, onChange, type = "text", multiline = false, characterCount = false, maxChars = 1000, focused = false }) {
   const [isFocused, setIsFocused] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const hasValue = value && value.length > 0;
   const showFloatingLabel = hasValue || isFocused;
   const borderColor = (isFocused || focused) ? T.color.green : T.color.neutral500;
   const borderWidth = (isFocused || focused) ? 2 : 1;
+  const isPassword = type === "password";
+  const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
   const sharedStyle = {
     fontFamily: T.font.body, fontWeight: 400, fontSize: showFloatingLabel ? 16 : 20,
@@ -273,6 +279,7 @@ function InputField({ label, value, onChange, multiline = false, characterCount 
         borderRadius: T.radius.input, padding: 12, display: "flex", flexDirection: "column",
         minHeight: multiline ? 180 : 56, justifyContent: multiline ? "flex-start" : "center",
         boxSizing: "border-box", transition: "border-color 0.2s ease",
+        position: "relative",
       }}>
         {showFloatingLabel && (
           <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.neutral700 }}>{label}</span>
@@ -288,15 +295,30 @@ function InputField({ label, value, onChange, multiline = false, characterCount 
             style={{ ...sharedStyle, flex: 1, minHeight: 100 }}
           />
         ) : (
-          <input
-            type="text"
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            placeholder={!showFloatingLabel ? label : ""}
-            style={{ ...sharedStyle, height: showFloatingLabel ? "auto" : "100%" }}
-          />
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              type={inputType}
+              value={value}
+              onChange={e => onChange(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder={!showFloatingLabel ? label : ""}
+              style={{ ...sharedStyle, flex: 1, height: showFloatingLabel ? "auto" : "100%" }}
+            />
+            {isPassword && hasValue && (
+              <button
+                onClick={() => setShowPassword(s => !s)}
+                type="button"
+                style={{
+                  background: "none", border: "none", cursor: "pointer", padding: 0,
+                  fontFamily: T.font.body, fontSize: 12, fontWeight: 500, lineHeight: 1.4,
+                  color: T.color.neutral700, whiteSpace: "nowrap", flexShrink: 0,
+                }}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            )}
+          </div>
         )}
       </div>
       {characterCount && (
@@ -1268,15 +1290,14 @@ const AccountIcon = () => (
   </svg>
 );
 
-function FundPage({ data, goTo }) {
+function FundPage({ data, goTo, goHome, isSignedIn }) {
   const goalNum = Number(data.goal) || 0;
   const goalFormatted = `$${goalNum.toLocaleString()}`;
   const displayName = data.title || "My Summa Fund";
-  const organizer = data.fundFor === "myself" && data.firstName
+  // Organizer is always the account creator, not the beneficiary
+  const organizer = data.firstName
     ? `${data.firstName}${data.lastName ? ` ${data.lastName}` : ""}`
-    : data.fundFor === "someone" && data.recipientName
-      ? data.recipientName
-      : "You";
+    : "the organizer";
 
   return (
     <div style={{
@@ -1291,16 +1312,19 @@ function FundPage({ data, goTo }) {
         width: "100%", padding: "16px 16px", boxSizing: "border-box",
         borderBottom: `1px solid ${T.color.neutral500}`,
       }}>
-        <button onClick={() => goTo(19)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Dashboard">
+        <button onClick={() => goTo(isSignedIn ? 19 : 21)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label={isSignedIn ? "Dashboard" : "Sign in"}>
           <AccountIcon />
         </button>
-        <span style={{
+        <button onClick={goHome} style={{
+          background: "none", border: "none", cursor: "pointer", padding: 0,
           fontFamily: T.font.heading, fontWeight: 700, fontSize: 18, color: T.color.primary,
           letterSpacing: 1,
         }}>
           summa
-        </span>
-        <MenuIcon />
+        </button>
+        <button onClick={() => alert("This feature is coming soon! We're working on the menu.")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Menu">
+          <MenuIcon />
+        </button>
       </div>
 
       {/* Fund Details Section */}
@@ -1416,7 +1440,7 @@ function FundPage({ data, goTo }) {
                 {organizer}
               </span>
             </div>
-            <button style={{
+            <button onClick={() => alert("This feature is coming soon! We're working on making it easy to message the organizer directly.")} style={{
               backgroundColor: T.color.neutral300, border: `2px solid ${T.color.primary}`,
               borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
               fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary,
@@ -1634,18 +1658,21 @@ const DollarIcon = () => (
   </svg>
 );
 
-function FundPageSupporter({ data, goTo }) {
+function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
   const goalNum = Number(data.goal) || 0;
   const goalFormatted = `$${goalNum.toLocaleString()}`;
-  const raised = data.supporterContribution || 0;
-  const raisedFormatted = `$${raised.toLocaleString()}`;
-  const progressPct = goalNum > 0 ? Math.min((raised / goalNum) * 100, 100) : 0;
+  const confirmed = data.supporterContribution || 0;
+  const pending = data.pendingContribution || 0;
+  const raised = confirmed + pending;
+  const raisedFormatted = `$${confirmed.toLocaleString()}`;
+  const confirmedPct = goalNum > 0 ? Math.min((confirmed / goalNum) * 100, 100) : 0;
+  const totalPct = goalNum > 0 ? Math.min((raised / goalNum) * 100, 100) : 0;
+  const progressPct = confirmedPct;
   const displayName = data.title || "My Summa Fund";
-  const organizer = data.fundFor === "myself" && data.firstName
+  // Organizer is always the account creator, not the beneficiary
+  const organizer = data.firstName
     ? `${data.firstName}${data.lastName ? ` ${data.lastName}` : ""}`
-    : data.fundFor === "someone" && data.recipientName
-      ? data.recipientName
-      : "Organizer";
+    : "the organizer";
 
   const supporterCount = data.supporterCount || 0;
 
@@ -1662,14 +1689,19 @@ function FundPageSupporter({ data, goTo }) {
         width: "100%", padding: "16px 16px", boxSizing: "border-box",
         borderBottom: `1px solid ${T.color.neutral500}`,
       }}>
-        <AccountIcon />
-        <span style={{
+        <button onClick={() => goTo(isSignedIn ? 19 : 21)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label={isSignedIn ? "Dashboard" : "Sign in"}>
+          <AccountIcon />
+        </button>
+        <button onClick={goHome} style={{
+          background: "none", border: "none", cursor: "pointer", padding: 0,
           fontFamily: T.font.heading, fontWeight: 700, fontSize: 18, color: T.color.primary,
           letterSpacing: 1,
         }}>
           summa
-        </span>
-        <MenuIcon />
+        </button>
+        <button onClick={() => alert("This feature is coming soon! We're working on the menu.")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Menu">
+          <MenuIcon />
+        </button>
       </div>
 
       {/* Fund Details Section */}
@@ -1704,14 +1736,26 @@ function FundPageSupporter({ data, goTo }) {
           )}
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Bar — two layers: confirmed (solid green) + pending (faded green) */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
           <div style={{
             width: "100%", height: 8, backgroundColor: "rgba(143,143,143,0.2)",
-            borderRadius: 8, overflow: "hidden",
+            borderRadius: 8, overflow: "hidden", position: "relative",
           }}>
+            {/* Pending layer (lighter) */}
+            {totalPct > confirmedPct && (
+              <div style={{
+                position: "absolute", left: 0, top: 0,
+                width: `${Math.max(totalPct, 0.3)}%`, height: "100%",
+                background: `linear-gradient(90deg, ${T.color.green}, #d6ff76)`,
+                borderRadius: 8, opacity: 0.35,
+                transition: "width 0.6s ease",
+              }} />
+            )}
+            {/* Confirmed layer (solid) */}
             <div style={{
-              width: `${Math.max(progressPct, 0.3)}%`, height: "100%",
+              position: "absolute", left: 0, top: 0,
+              width: `${Math.max(confirmedPct, confirmed > 0 ? 0.3 : 0)}%`, height: "100%",
               background: `linear-gradient(90deg, ${T.color.green}, #d6ff76)`,
               borderRadius: 8, transition: "width 0.6s ease",
             }} />
@@ -1781,7 +1825,7 @@ function FundPageSupporter({ data, goTo }) {
                 {organizer}
               </span>
             </div>
-            <button style={{
+            <button onClick={() => alert("This feature is coming soon! We're working on making it easy to message the organizer directly.")} style={{
               backgroundColor: T.color.neutral300, border: `2px solid ${T.color.primary}`,
               borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
               fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary,
@@ -1799,19 +1843,19 @@ function FundPageSupporter({ data, goTo }) {
 // ============================================================
 // SCREEN: Support — Choose Amount
 // ============================================================
-function SupportChooseAmount({ data, setData, goTo }) {
+function SupportChooseAmount({ data, setData, goTo, goHome }) {
   const [amount, setAmount] = useState("");
   const inputRef = useRef(null);
   const presetAmounts = [5, 10, 25, 50, 100, 250];
 
   const goalNum = Number(data.goal) || 0;
-  const raised = data.supporterContribution || 0;
+  const confirmed = data.supporterContribution || 0;
   const pendingAmount = parseFloat(amount) || 0;
-  const previewTotal = raised + pendingAmount;
-  const raisedFormatted = `$${raised.toLocaleString()}`;
+  const previewTotal = confirmed + pendingAmount;
+  const raisedFormatted = `$${confirmed.toLocaleString()}`;
   const previewFormatted = pendingAmount > 0 ? `$${previewTotal.toLocaleString()}` : raisedFormatted;
   const goalFormatted = `$${goalNum.toLocaleString()}`;
-  const basePct = goalNum > 0 ? Math.min((raised / goalNum) * 100, 100) : 0;
+  const basePct = goalNum > 0 ? Math.min((confirmed / goalNum) * 100, 100) : 0;
   const previewPct = goalNum > 0 ? Math.min((previewTotal / goalNum) * 100, 100) : 0;
   const supporterCount = data.supporterCount || 0;
 
@@ -1858,12 +1902,13 @@ function SupportChooseAmount({ data, setData, goTo }) {
         <button onClick={() => goTo(12, "left")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
           <ArrowBackIcon />
         </button>
-        <span style={{
+        <button onClick={goHome} style={{
+          background: "none", border: "none", cursor: "pointer", padding: 0,
           fontFamily: T.font.heading, fontWeight: 700, fontSize: 18, color: T.color.primary,
           letterSpacing: 1,
         }}>
           summa
-        </span>
+        </button>
         <button style={{
           backgroundColor: T.color.neutral300, border: `2px solid ${T.color.primary}`,
           borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
@@ -2011,6 +2056,7 @@ function SupportChooseAmount({ data, setData, goTo }) {
         <SwipeButton
           text="Swipe to give"
           onSwipeComplete={handleSwipeComplete}
+          disabled={!data.supportAmount || data.supportAmount <= 0}
         />
       </div>
     </div>
@@ -2021,7 +2067,7 @@ function SupportChooseAmount({ data, setData, goTo }) {
 // ============================================================
 // SCREEN: Support — Choose Payment Method
 // ============================================================
-function SupportPaymentMethod({ data, setData, goTo }) {
+function SupportPaymentMethod({ data, setData, goTo, goHome }) {
   const [selected, setSelected] = useState(null);
   const amountNum = data.supportAmount || 0;
   const amountFormatted = `$${amountNum.toLocaleString()}`;
@@ -2033,11 +2079,12 @@ function SupportPaymentMethod({ data, setData, goTo }) {
       ? data.recipientName.split(" ")[0]
       : "them";
 
+  const handles = data.paymentHandles || {};
   const methods = [
-    { id: "cashapp", name: "Cash App", icon: <LogoCashApp /> },
-    { id: "venmo", name: "Venmo", icon: <LogoVenmo /> },
-    { id: "zelle", name: "Zelle", icon: <LogoZelle /> },
-    { id: "cash", name: "Record Cash Payment", icon: null },
+    { id: "cashapp", name: "Cash App", icon: <LogoCashApp />, linked: !!handles.cashapp },
+    { id: "venmo", name: "Venmo", icon: <LogoVenmo />, linked: !!handles.venmo },
+    { id: "zelle", name: "Zelle", icon: <LogoZelle />, linked: !!handles.zelle },
+    { id: "cash", name: "Record Cash Payment", icon: null, linked: true },
   ];
 
   const selectedName = methods.find(m => m.id === selected)?.name || "";
@@ -2074,12 +2121,13 @@ function SupportPaymentMethod({ data, setData, goTo }) {
         <button onClick={() => goTo(13, "left")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
           <ArrowBackIcon />
         </button>
-        <span style={{
+        <button onClick={goHome} style={{
+          background: "none", border: "none", cursor: "pointer", padding: 0,
           fontFamily: T.font.heading, fontWeight: 700, fontSize: 18, color: T.color.primary,
           letterSpacing: 1,
         }}>
           summa
-        </span>
+        </button>
         <button style={{
           backgroundColor: T.color.neutral300, border: `2px solid ${T.color.primary}`,
           borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
@@ -2129,14 +2177,16 @@ function SupportPaymentMethod({ data, setData, goTo }) {
         {methods.map(m => (
           <button
             key={m.id}
-            onClick={() => setSelected(m.id)}
+            onClick={() => m.linked && setSelected(m.id)}
+            disabled={!m.linked}
             style={{
               display: "flex", alignItems: "center", gap: 32,
               width: "100%", borderRadius: 16,
               backgroundColor: T.color.white,
               boxShadow: T.shadow.card,
-              border: "none", cursor: "pointer",
+              border: "none", cursor: m.linked ? "pointer" : "default",
               padding: 16, boxSizing: "border-box",
+              opacity: m.linked ? 1 : 0.4,
             }}
           >
             <Radio active={selected === m.id} />
@@ -2149,6 +2199,14 @@ function SupportPaymentMethod({ data, setData, goTo }) {
                 {m.name}
               </span>
             </div>
+            {!m.linked && (
+              <span style={{
+                fontFamily: T.font.body, fontSize: 11, color: T.color.neutral700,
+                marginLeft: "auto",
+              }}>
+                Not set up
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -2179,7 +2237,7 @@ function SupportPaymentMethod({ data, setData, goTo }) {
 // ============================================================
 // SCREEN: Support — Record Payment Disclosure
 // ============================================================
-function SupportRecordPayment({ data, setData, goTo }) {
+function SupportRecordPayment({ data, setData, goTo, goHome }) {
   const amount = data.supportAmount || 0;
   const amountFormatted = `$${amount.toLocaleString()}`;
   const methodId = data.supportPaymentMethod || "venmo";
@@ -2259,12 +2317,13 @@ function SupportRecordPayment({ data, setData, goTo }) {
         <button onClick={() => goTo(14, "left")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
           <ArrowBackIcon />
         </button>
-        <span style={{
+        <button onClick={goHome} style={{
+          background: "none", border: "none", cursor: "pointer", padding: 0,
           fontFamily: T.font.heading, fontWeight: 700, fontSize: 18, color: T.color.primary,
           letterSpacing: 1,
         }}>
           summa
-        </span>
+        </button>
         <div style={{ width: 24 }} />
       </div>
 
@@ -2458,7 +2517,7 @@ function StepRow({ num, text }) {
 // ============================================================
 // SCREEN: Support — Sender Details (name + message after payment)
 // ============================================================
-function SupportSenderDetails({ data, setData, goTo }) {
+function SupportSenderDetails({ data, setData, goTo, goHome }) {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [anonymous, setAnonymous] = useState(false);
@@ -2478,13 +2537,25 @@ function SupportSenderDetails({ data, setData, goTo }) {
       if (error) console.warn("Contribution save error:", error);
     }
 
-    // Update local state for instant UI feedback
+    // Add as a pending donation — raised amount only increases when guardian confirms
+    const methodNames = { cashapp: "Cash App", venmo: "Venmo", zelle: "Zelle", cash: "Cash" };
+    const newDonation = {
+      id: Date.now(),
+      name: displayName,
+      amount: data.supportAmount || 0,
+      method: methodNames[data.supportPaymentMethod] || data.supportPaymentMethod || "Venmo",
+      message: message.trim(),
+      time: "Just now",
+      fundTitle: data.title || "My Summa Fund",
+      confirmed: false,
+    };
     setData(prev => ({
       ...prev,
       supporterDisplayName: displayName,
       supporterMessage: message.trim(),
-      supporterContribution: (prev.supporterContribution || 0) + (prev.supportAmount || 0),
       supporterCount: (prev.supporterCount || 0) + 1,
+      pendingContribution: (prev.pendingContribution || 0) + (prev.supportAmount || 0),
+      donations: [...(prev.donations || []), newDonation],
     }));
     goTo(17);
   };
@@ -2505,12 +2576,13 @@ function SupportSenderDetails({ data, setData, goTo }) {
         <button onClick={() => goTo(15, "left")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
           <ArrowBackIcon />
         </button>
-        <span style={{
+        <button onClick={goHome} style={{
+          background: "none", border: "none", cursor: "pointer", padding: 0,
           fontFamily: T.font.heading, fontWeight: 700, fontSize: 18, color: T.color.primary,
           letterSpacing: 1,
         }}>
           summa
-        </span>
+        </button>
         <div style={{
           backgroundColor: T.color.white, border: `2px solid #d6ff76`,
           borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
@@ -2842,10 +2914,13 @@ function FundPageSupporterShare({ data, onBack }) {
 // ============================================================
 // SCREEN: Guardian Dashboard (Home)
 // ============================================================
-function GuardianHome({ data, goTo }) {
+function GuardianHome({ data, goTo, goHome, isSignedIn }) {
   const goalNum = Number(data.goal) || 0;
-  const raised = data.supporterContribution || 0;
-  const pct = goalNum > 0 ? Math.min((raised / goalNum) * 100, 100) : 0;
+  const confirmed = data.supporterContribution || 0;
+  const pending = data.pendingContribution || 0;
+  const raised = confirmed;
+  const pct = goalNum > 0 ? Math.min((confirmed / goalNum) * 100, 100) : 0;
+  const totalPct = goalNum > 0 ? Math.min(((confirmed + pending) / goalNum) * 100, 100) : 0;
   const fundTitle = data.title || "My Summa Fund";
 
   return (
@@ -2861,14 +2936,19 @@ function GuardianHome({ data, goTo }) {
         width: "100%", padding: "16px 16px", boxSizing: "border-box",
         borderBottom: `1px solid ${T.color.neutral500}`,
       }}>
-        <AccountIcon />
-        <span style={{
+        <button onClick={() => goTo(isSignedIn ? 19 : 21)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label={isSignedIn ? "Dashboard" : "Sign in"}>
+          <AccountIcon />
+        </button>
+        <button onClick={goHome} style={{
+          background: "none", border: "none", cursor: "pointer", padding: 0,
           fontFamily: T.font.heading, fontWeight: 700, fontSize: 18, color: T.color.primary,
           letterSpacing: 1,
         }}>
           summa
-        </span>
-        <MenuIcon />
+        </button>
+        <button onClick={() => alert("This feature is coming soon! We're working on the menu.")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Menu">
+          <MenuIcon />
+        </button>
       </div>
 
       {/* Body */}
@@ -2922,10 +3002,21 @@ function GuardianHome({ data, goTo }) {
                 <div style={{
                   width: "100%", height: 8, borderRadius: 8,
                   backgroundColor: "rgba(143,143,143,0.2)", overflow: "hidden",
+                  position: "relative",
                 }}>
+                  {/* Pending layer (lighter) */}
+                  {totalPct > pct && (
+                    <div style={{
+                      position: "absolute", left: 0, top: -4,
+                      width: `${totalPct}%`, height: 16, borderRadius: 8,
+                      backgroundColor: T.color.primary, opacity: 0.4,
+                    }} />
+                  )}
+                  {/* Confirmed layer (solid) */}
                   <div style={{
+                    position: "absolute", left: 0, top: -4,
                     width: `${pct}%`, height: 16, borderRadius: 8,
-                    backgroundColor: T.color.primary, marginTop: -4,
+                    backgroundColor: T.color.primary,
                   }} />
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
@@ -2933,7 +3024,7 @@ function GuardianHome({ data, goTo }) {
                     <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary }}>RAISED</span>
                     <br />
                     <span style={{ fontFamily: T.font.body, fontSize: 12, fontWeight: 700, lineHeight: 1.4, color: T.color.primary }}>
-                      ${raised.toLocaleString()}
+                      ${confirmed.toLocaleString()}
                     </span>
                   </div>
                   <div style={{ textAlign: "right" }}>
@@ -2968,15 +3059,14 @@ function GuardianHome({ data, goTo }) {
 // ============================================================
 function GuardianReviewFund({ data, setData, goTo }) {
   const goalNum = Number(data.goal) || 0;
-  const raised = data.supporterContribution || 0;
+  const confirmed = data.supporterContribution || 0;
+  const pending = data.pendingContribution || 0;
+  const raised = confirmed + pending;
   const fundTitle = data.title || "My Summa Fund";
 
-  // Two-layer progress: confirmed (dark) + pending (dark 40% opacity)
-  const confirmedAmount = (data.donations || [])
-    .filter(d => d.confirmed)
-    .reduce((sum, d) => sum + d.amount, 0);
+  // Two-layer progress: confirmed (dark solid) + pending (dark 40% opacity)
   const totalPct = goalNum > 0 ? Math.min((raised / goalNum) * 100, 100) : 0;
-  const confirmedPct = goalNum > 0 ? Math.min((confirmedAmount / goalNum) * 100, 100) : 0;
+  const confirmedPct = goalNum > 0 ? Math.min((confirmed / goalNum) * 100, 100) : 0;
 
   // Demo donations if none exist
   const donations = (data.donations && data.donations.length > 0)
@@ -2988,10 +3078,18 @@ function GuardianReviewFund({ data, setData, goTo }) {
       ];
 
   const handleConfirm = (donationId) => {
+    const donation = donations.find(d => d.id === donationId);
+    const confirmAmount = donation ? donation.amount : 0;
     const updated = donations.map(d =>
       d.id === donationId ? { ...d, confirmed: true } : d
     );
-    setData(prev => ({ ...prev, donations: updated }));
+    setData(prev => ({
+      ...prev,
+      donations: updated,
+      // Move from pending to confirmed (raised)
+      supporterContribution: (prev.supporterContribution || 0) + confirmAmount,
+      pendingContribution: Math.max(0, (prev.pendingContribution || 0) - confirmAmount),
+    }));
   };
 
   return (
@@ -3115,6 +3213,14 @@ function GuardianReviewFund({ data, setData, goTo }) {
                 }}>
                   {donation.time} &bull; {donation.fundTitle || fundTitle}
                 </span>
+                {donation.message && (
+                  <span style={{
+                    fontFamily: T.font.body, fontWeight: 400, fontSize: 14,
+                    color: T.color.neutral700, fontStyle: "normal", marginTop: 4,
+                  }}>
+                    &ldquo;{donation.message}&rdquo;
+                  </span>
+                )}
               </div>
 
               {/* Action buttons — show for unconfirmed donations */}
@@ -3184,7 +3290,7 @@ const SummaLogo = () => (
   </svg>
 );
 
-function StartScreen({ onGetStarted, onJumpToLatest }) {
+function StartScreen({ onSignUp, onSignIn, onJumpToLatest }) {
   return (
     <div style={{
       display: "flex", flexDirection: "column", justifyContent: "flex-end",
@@ -3201,10 +3307,10 @@ function StartScreen({ onGetStarted, onJumpToLatest }) {
           }}
         />
       )}
-      {/* Hero image */}
+      {/* Hero image — top ~40% of screen */}
       <div style={{
-        position: "absolute", top: 0, left: 0, width: "100%", height: "60%",
-        borderRadius: 24, overflow: "hidden",
+        position: "absolute", top: 0, left: 0, width: "100%", height: "40%",
+        overflow: "hidden",
       }}>
         <img
           src={HERO_IMAGE}
@@ -3234,7 +3340,7 @@ function StartScreen({ onGetStarted, onJumpToLatest }) {
             fontFamily: T.font.heading, fontWeight: 500, fontSize: 28, lineHeight: 1.4,
             color: T.color.primary, margin: 0,
           }}>
-            Say 'yes'{"\n"}to their dreams,{"\n"}with support from{"\n"}your community
+            Say &lsquo;yes&rsquo;{"\n"}to their dreams,{"\n"}with support from{"\n"}your community
           </h1>
           <p style={{
             fontFamily: T.font.body, fontWeight: 400, fontSize: 20, lineHeight: 1.6,
@@ -3244,10 +3350,171 @@ function StartScreen({ onGetStarted, onJumpToLatest }) {
           </p>
         </div>
 
-        {/* Get started button */}
-        <div style={{ width: "100%" }}>
-          <ButtonPrimary text="Get started" onClick={onGetStarted} />
+        {/* Button group */}
+        <div style={{
+          display: "flex", flexDirection: "column", gap: 32,
+          alignItems: "center", width: "100%",
+        }}>
+          {/* Sign up — primary button (60px tall) */}
+          <button onClick={onSignUp} style={{
+            width: "100%", height: 60, borderRadius: T.radius.circle,
+            background: "linear-gradient(90deg, #d6ff76, #eafe7e)",
+            border: "none", cursor: "pointer",
+            fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
+            color: T.color.primary,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            Sign up
+          </button>
+
+          {/* Sign in — text link */}
+          <button onClick={onSignIn} style={{
+            background: "none", border: "none", cursor: "pointer", padding: 0,
+            fontFamily: T.font.body, fontSize: 16, fontWeight: 400, lineHeight: 1.2,
+            color: T.color.primary, textDecoration: "underline",
+          }}>
+            Sign in
+          </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// SCREEN: Sign Up
+// ============================================================
+function SignUpScreen({ onCreateAccount, onBack }) {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleCreate = () => {
+    const parts = fullName.trim().split(/\s+/);
+    const firstName = parts[0] || "";
+    const lastName = parts.slice(1).join(" ") || "";
+    onCreateAccount({ firstName, lastName, email, password });
+  };
+
+  const canSubmit = fullName.trim() && email.trim() && password.trim();
+
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column", gap: 48,
+      width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
+      padding: "80px 16px 60px 16px", boxSizing: "border-box",
+      fontFamily: T.font.body, position: "relative",
+    }}>
+      {/* Content */}
+      <div style={{
+        flex: 1, display: "flex", flexDirection: "column", gap: 48, width: "100%",
+        alignItems: "center",
+      }}>
+        {/* Back button */}
+        <div style={{ width: "100%", maxWidth: 343 }}>
+          <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
+            <ArrowBackIcon />
+          </button>
+        </div>
+
+        {/* Headline */}
+        <div style={{ width: "100%", maxWidth: 343 }}>
+          <h1 style={{
+            fontFamily: T.font.heading, fontWeight: 500, fontSize: 28, lineHeight: 1.4,
+            color: T.color.primary, margin: 0,
+          }}>
+            What&rsquo;s your name?
+          </h1>
+        </div>
+
+        {/* Form fields — using existing InputField with floating labels */}
+        <InputField label="Full name" value={fullName} onChange={setFullName} />
+        <InputField label="Email" value={email} onChange={setEmail} type="email" />
+        <InputField label="Password" value={password} onChange={setPassword} type="password" />
+      </div>
+
+      {/* Create account button */}
+      <div style={{ width: "100%", maxWidth: 343, margin: "0 auto" }}>
+        <button
+          onClick={handleCreate}
+          disabled={!canSubmit}
+          style={{
+            width: "100%", height: 60, borderRadius: T.radius.circle,
+            background: canSubmit ? "linear-gradient(90deg, #d6ff76, #eafe7e)" : T.color.neutral300,
+            border: canSubmit ? "1px solid #191919" : "none",
+            cursor: canSubmit ? "pointer" : "default",
+            fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
+            color: T.color.primary, opacity: canSubmit ? 1 : 0.5,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          Create My Free Account
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// SCREEN: Sign In
+// ============================================================
+function SignInScreen({ onSignIn, onBack }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const canSubmit = email.trim() && password.trim();
+
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column", gap: 48,
+      width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
+      padding: "80px 16px 60px 16px", boxSizing: "border-box",
+      fontFamily: T.font.body, position: "relative",
+    }}>
+      {/* Content */}
+      <div style={{
+        flex: 1, display: "flex", flexDirection: "column", gap: 48, width: "100%",
+        alignItems: "center",
+      }}>
+        {/* Back button */}
+        <div style={{ width: "100%", maxWidth: 343 }}>
+          <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
+            <ArrowBackIcon />
+          </button>
+        </div>
+
+        {/* Headline */}
+        <div style={{ width: "100%", maxWidth: 343 }}>
+          <h1 style={{
+            fontFamily: T.font.heading, fontWeight: 500, fontSize: 28, lineHeight: 1.4,
+            color: T.color.primary, margin: 0,
+          }}>
+            Please sign in
+          </h1>
+        </div>
+
+        {/* Form fields */}
+        <InputField label="Email" value={email} onChange={setEmail} type="email" />
+        <InputField label="Password" value={password} onChange={setPassword} type="password" />
+      </div>
+
+      {/* Sign in button — pinned to bottom */}
+      <div style={{ width: "100%", maxWidth: 343, margin: "0 auto" }}>
+        <button
+          onClick={() => onSignIn({ email, password })}
+          disabled={!canSubmit}
+          style={{
+            width: "100%", height: 60, borderRadius: T.radius.circle,
+            background: canSubmit ? "linear-gradient(90deg, #d6ff76, #eafe7e)" : T.color.neutral300,
+            border: canSubmit ? "1px solid #191919" : "none",
+            cursor: canSubmit ? "pointer" : "default",
+            fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
+            color: T.color.primary, opacity: canSubmit ? 1 : 0.5,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          Sign in
+        </button>
       </div>
     </div>
   );
@@ -3258,6 +3525,9 @@ function StartScreen({ onGetStarted, onJumpToLatest }) {
 // ============================================================
 export default function SummaFundSetup() {
   const [showStart, setShowStart] = useState(true);
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const [screen, setScreen] = useState(0);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState({
@@ -3269,7 +3539,7 @@ export default function SummaFundSetup() {
     description: "",
     goal: "",
     targetDate: "",
-    paymentHandles: { venmo: "JasonMei", cashapp: "JasonMei" }, // demo handles for prototype
+    paymentHandles: {},
   });
   const [slideDir, setSlideDir] = useState("right");
   const [animating, setAnimating] = useState(false);
@@ -3344,6 +3614,14 @@ export default function SummaFundSetup() {
     }, 200);
   };
 
+  // Return to the Start screen (logo tap)
+  const goHome = () => {
+    setShowStart(true);
+    setShowSignUp(false);
+    setShowSignIn(false);
+    setScreen(0);
+  };
+
   const next = () => {
     // If we came from Review via Edit, return there instead of advancing
     if (returnTo !== null) {
@@ -3413,17 +3691,25 @@ export default function SummaFundSetup() {
     7: <SetupASummaFund6LinkPaymentMethods data={data} setData={setData} onNext={next} onBack={back} />,
     8: <ReviewSummaFund data={data} onNext={next} onBack={back} goTo={(dest) => { setReturnTo(8); goTo(dest); }} />,
     9: <ScreenComplete data={data} setData={setData} onNext={next} />,
-    10: <FundPage data={data} goTo={goTo} />,
+    10: <FundPage data={data} goTo={goTo} goHome={goHome} isSignedIn={isSignedIn} />,
     11: <FundPageShare data={data} onBack={() => goTo(10, "left")} />,
-    12: <FundPageSupporter data={data} goTo={goTo} />,
-    13: <SupportChooseAmount data={data} setData={setData} goTo={goTo} />,
-    14: <SupportPaymentMethod data={data} setData={setData} goTo={goTo} />,
-    15: <SupportRecordPayment data={data} setData={setData} goTo={goTo} />,
-    16: <SupportSenderDetails data={data} setData={setData} goTo={goTo} />,
+    12: <FundPageSupporter data={data} goTo={goTo} goHome={goHome} isSignedIn={isSignedIn} />,
+    13: <SupportChooseAmount data={data} setData={setData} goTo={goTo} goHome={goHome} />,
+    14: <SupportPaymentMethod data={data} setData={setData} goTo={goTo} goHome={goHome} />,
+    15: <SupportRecordPayment data={data} setData={setData} goTo={goTo} goHome={goHome} />,
+    16: <SupportSenderDetails data={data} setData={setData} goTo={goTo} goHome={goHome} />,
     17: <SupportComplete data={data} goTo={goTo} />,
     18: <FundPageSupporterShare data={data} onBack={() => goTo(12, "left")} />,
-    19: <GuardianHome data={data} goTo={goTo} />,
+    19: <GuardianHome data={data} goTo={goTo} goHome={goHome} isSignedIn={isSignedIn} />,
     20: <GuardianReviewFund data={data} setData={setData} goTo={goTo} />,
+    21: <SignInScreen
+      onSignIn={({ email }) => {
+        setData(prev => ({ ...prev, email }));
+        setIsSignedIn(true);
+        goTo(19);
+      }}
+      onBack={() => goTo(10, "left")}
+    />,
   };
 
   if (showStart) {
@@ -3431,10 +3717,35 @@ export default function SummaFundSetup() {
       <div style={{ background: T.gradient.bg, minHeight: "100vh" }}>
         <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
         <style>{`input::placeholder, textarea::placeholder { color: ${T.color.neutral700} !important; opacity: 1; }`}</style>
-        <StartScreen
-          onGetStarted={() => setShowStart(false)}
-          onJumpToLatest={() => { setShowStart(false); setScreen(12); }}
-        />
+        {showSignUp ? (
+          <SignUpScreen
+            onCreateAccount={({ firstName, lastName, email }) => {
+              setData(prev => ({ ...prev, firstName, lastName, email }));
+              setIsSignedIn(true);
+              setShowStart(false);
+              setShowSignUp(false);
+              setScreen(0);
+            }}
+            onBack={() => setShowSignUp(false)}
+          />
+        ) : showSignIn ? (
+          <SignInScreen
+            onSignIn={({ email }) => {
+              setData(prev => ({ ...prev, email }));
+              setIsSignedIn(true);
+              setShowStart(false);
+              setShowSignIn(false);
+              setScreen(19);
+            }}
+            onBack={() => setShowSignIn(false)}
+          />
+        ) : (
+          <StartScreen
+            onSignUp={() => setShowSignUp(true)}
+            onSignIn={() => setShowSignIn(true)}
+            onJumpToLatest={() => { setShowStart(false); setScreen(12); }}
+          />
+        )}
       </div>
     );
   }
