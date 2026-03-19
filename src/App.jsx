@@ -2937,14 +2937,42 @@ function FundPageSupporterShare({ data, onBack }) {
 // ============================================================
 // SCREEN: Guardian Dashboard (Home)
 // ============================================================
-function GuardianHome({ data, goTo, goHome, isSignedIn }) {
-  const goalNum = Number(data.goal) || 0;
-  const confirmed = data.supporterContribution || 0;
-  const pending = data.pendingContribution || 0;
-  const raised = confirmed;
-  const pct = goalNum > 0 ? Math.min((confirmed / goalNum) * 100, 100) : 0;
-  const totalPct = goalNum > 0 ? Math.min(((confirmed + pending) / goalNum) * 100, 100) : 0;
-  const fundTitle = data.title || "My Summa Fund";
+function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
+  const [funds, setFunds] = useState([]);
+  const [loadingFunds, setLoadingFunds] = useState(true);
+
+  // Fetch user's funds from Supabase on mount
+  useEffect(() => {
+    setLoadingFunds(true);
+    loadFundsByCreator().then(({ funds: fetchedFunds }) => {
+      setFunds(fetchedFunds || []);
+      setLoadingFunds(false);
+    }).catch(() => setLoadingFunds(false));
+  }, []);
+
+  const handleFundTap = (fund) => {
+    // Hydrate the app data with this fund's details so GuardianReviewFund works
+    setData(prev => ({
+      ...prev,
+      fundId: fund.id,
+      fundSlug: fund.slug,
+      fundFor: fund.fund_for,
+      firstName: fund.first_name || prev.firstName || "",
+      lastName: fund.last_name || prev.lastName || "",
+      recipientName: fund.recipient_name || "",
+      title: fund.title || "",
+      description: fund.description || "",
+      goal: fund.goal ? String(fund.goal) : "",
+      targetDate: fund.target_date || "",
+      paymentHandles: fund.payment_handles || {},
+      coverImage: fund.cover_photo_url || null,
+      supporterContribution: Number(fund.raised_amount) || 0,
+      supporterCount: fund.supporter_count || 0,
+      pendingContribution: 0,
+      donations: [],
+    }));
+    goTo(20);
+  };
 
   return (
     <div style={{
@@ -3006,7 +3034,7 @@ function GuardianHome({ data, goTo, goHome, isSignedIn }) {
         </div>
 
         {/* Hosting section */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 16px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 16px" }}>
           <h2 style={{
             fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
             color: T.color.primary, margin: 0,
@@ -3014,74 +3042,84 @@ function GuardianHome({ data, goTo, goHome, isSignedIn }) {
             Hosting
           </h2>
 
-          {/* Fund card — tappable */}
-          <div
-            onClick={() => goTo(20)}
-            style={{
-              backgroundColor: T.color.white, borderRadius: 16,
-              boxShadow: "0px 4px 16px rgba(0,0,0,0.08)",
-              padding: 16, display: "flex", gap: 10, alignItems: "center",
-              cursor: "pointer", width: 343, boxSizing: "border-box",
-            }}
-          >
-            {/* Thumbnail */}
-            <div style={{
-              width: 80, height: 80, borderRadius: 16, backgroundColor: T.color.neutral300,
-              flexShrink: 0, overflow: "hidden",
-            }}>
-              {data.coverImage && (
-                <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              )}
-            </div>
-            {/* Text + progress */}
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
-              <p style={{
-                fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
-                color: T.color.primary, margin: 0,
-              }}>
-                {fundTitle}
-              </p>
-              {/* Progress bar */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+          {loadingFunds && (
+            <p style={{ fontFamily: T.font.body, fontSize: 14, color: T.color.neutral700, margin: 0 }}>
+              Loading your funds...
+            </p>
+          )}
+
+          {!loadingFunds && funds.length === 0 && (
+            <p style={{ fontFamily: T.font.body, fontSize: 14, color: T.color.neutral700, margin: 0 }}>
+              You haven't created any funds yet. Tap "Create a fund" to get started!
+            </p>
+          )}
+
+          {funds.map(fund => {
+            const goalNum = Number(fund.goal) || 0;
+            const raised = Number(fund.raised_amount) || 0;
+            const pct = goalNum > 0 ? Math.min((raised / goalNum) * 100, 100) : 0;
+            return (
+              <div
+                key={fund.id}
+                onClick={() => handleFundTap(fund)}
+                style={{
+                  backgroundColor: T.color.white, borderRadius: 16,
+                  boxShadow: "0px 4px 16px rgba(0,0,0,0.08)",
+                  padding: 16, display: "flex", gap: 10, alignItems: "center",
+                  cursor: "pointer", width: 343, boxSizing: "border-box",
+                }}
+              >
+                {/* Thumbnail */}
                 <div style={{
-                  width: "100%", height: 8, borderRadius: 8,
-                  backgroundColor: "rgba(143,143,143,0.2)", overflow: "hidden",
-                  position: "relative",
+                  width: 80, height: 80, borderRadius: 16, backgroundColor: T.color.neutral300,
+                  flexShrink: 0, overflow: "hidden",
                 }}>
-                  {/* Pending layer (lighter) */}
-                  {totalPct > pct && (
-                    <div style={{
-                      position: "absolute", left: 0, top: -4,
-                      width: `${totalPct}%`, height: 16, borderRadius: 8,
-                      backgroundColor: T.color.primary, opacity: 0.4,
-                    }} />
+                  {fund.cover_photo_url && (
+                    <img src={fund.cover_photo_url} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   )}
-                  {/* Confirmed layer (solid) */}
-                  <div style={{
-                    position: "absolute", left: 0, top: -4,
-                    width: `${pct}%`, height: 16, borderRadius: 8,
-                    backgroundColor: T.color.primary,
-                  }} />
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                  <div>
-                    <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary }}>RAISED</span>
-                    <br />
-                    <span style={{ fontFamily: T.font.body, fontSize: 12, fontWeight: 700, lineHeight: 1.4, color: T.color.primary }}>
-                      ${confirmed.toLocaleString()}
-                    </span>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary }}>GOAL</span>
-                    <br />
-                    <span style={{ fontFamily: T.font.body, fontSize: 12, fontWeight: 700, lineHeight: 1.4, color: T.color.primary }}>
-                      ${goalNum.toLocaleString()}
-                    </span>
+                {/* Text + progress */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
+                  <p style={{
+                    fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
+                    color: T.color.primary, margin: 0,
+                  }}>
+                    {fund.title || "Untitled Fund"}
+                  </p>
+                  {/* Progress bar */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+                    <div style={{
+                      width: "100%", height: 8, borderRadius: 8,
+                      backgroundColor: "rgba(143,143,143,0.2)", overflow: "hidden",
+                      position: "relative",
+                    }}>
+                      <div style={{
+                        position: "absolute", left: 0, top: -4,
+                        width: `${pct}%`, height: 16, borderRadius: 8,
+                        backgroundColor: T.color.primary,
+                      }} />
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                      <div>
+                        <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary }}>RAISED</span>
+                        <br />
+                        <span style={{ fontFamily: T.font.body, fontSize: 12, fontWeight: 700, lineHeight: 1.4, color: T.color.primary }}>
+                          ${raised.toLocaleString()}
+                        </span>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary }}>GOAL</span>
+                        <br />
+                        <span style={{ fontFamily: T.font.body, fontSize: 12, fontWeight: 700, lineHeight: 1.4, color: T.color.primary }}>
+                          ${goalNum.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
 
         {/* Supporting section */}
@@ -3789,7 +3827,7 @@ export default function SummaFundSetup() {
     16: <SupportSenderDetails data={data} setData={setData} goTo={goTo} goHome={goHome} />,
     17: <SupportComplete data={data} goTo={goTo} />,
     18: <FundPageSupporterShare data={data} onBack={() => goTo(12, "left")} />,
-    19: <GuardianHome data={data} goTo={goTo} goHome={goHome} isSignedIn={isSignedIn} />,
+    19: <GuardianHome data={data} setData={setData} goTo={goTo} goHome={goHome} isSignedIn={isSignedIn} />,
     20: <GuardianReviewFund data={data} setData={setData} goTo={goTo} />,
     21: <SignInScreen
       onSignIn={async ({ email, password }) => {
