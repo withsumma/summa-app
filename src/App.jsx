@@ -1254,7 +1254,13 @@ function ScreenComplete({ data, setData, onNext }) {
         </p>
       )}
 
-      <button onClick={onNext} style={{
+      <button onClick={() => {
+        if (fundUrl) {
+          window.open(fundUrl, "_blank");
+        } else {
+          onNext();
+        }
+      }} style={{
         background: "none", border: "none", cursor: "pointer", padding: 0,
         fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
         color: T.color.primary, textDecoration: "underline",
