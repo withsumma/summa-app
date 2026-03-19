@@ -122,3 +122,7 @@ create policy "Anyone can view contributions"
 create policy "Anyone can record contributions"
   on public.contributions for insert
   with check (true);
+
+create policy "Anyone can update contributions"
+  on public.contributions for update
+  using (true);

@@ -219,3 +219,20 @@ export async function getContributions(fundId) {
 
   return { contributions: contributions || [], error };
 }
+
+
+// ============================================================
+// API: Update a contribution's status (confirm or reject/ignore)
+// Called when the guardian taps "Confirm" or "Ignore"
+// Returns { error }
+// ============================================================
+export async function updateContributionStatus(contributionId, status) {
+  if (!supabase) return { error: "Supabase not configured" };
+
+  const { error } = await supabase
+    .from("contributions")
+    .update({ status })
+    .eq("id", contributionId);
+
+  return { error };
+}

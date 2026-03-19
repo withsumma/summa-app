@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-import { signUpUser, signInUser, getCurrentUser, signOutUser, createFund, loadFundBySlug, loadFundsByCreator, getContributions, recordContribution } from "./supabaseClient";
+import { signUpUser, signInUser, getCurrentUser, signOutUser, createFund, loadFundBySlug, loadFundsByCreator, getContributions, updateContributionStatus, recordContribution } from "./supabaseClient";
 
 // ============================================================
 // DESIGN TOKENS
@@ -2950,11 +2950,13 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
         setLoadingFunds(false);
         return;
       }
-      // For each fund, fetch contributions to get accurate totals
+      // For each fund, fetch contributions to get accurate totals (only confirmed)
       const enriched = await Promise.all(fetchedFunds.map(async (fund) => {
         const { contributions } = await getContributions(fund.id);
-        const totalRaised = (contributions || []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
-        const count = (contributions || []).length;
+        const active = (contributions || []).filter(c => c.status !== "rejected");
+        const confirmedOnly = active.filter(c => c.status === "confirmed");
+        const totalRaised = confirmedOnly.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+        const count = active.length;
         return { ...fund, raised_amount: totalRaised, supporter_count: count };
       }));
       setFunds(enriched);
@@ -2975,11 +2977,12 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
       time: new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
       fundTitle: fund.title,
       confirmed: c.status === "confirmed",
+      ignored: c.status === "rejected",
     }));
 
-    // Calculate confirmed vs pending from real data
+    // Calculate confirmed vs pending from real data (exclude ignored)
     const confirmedTotal = donations.filter(d => d.confirmed).reduce((s, d) => s + d.amount, 0);
-    const pendingTotal = donations.filter(d => !d.confirmed).reduce((s, d) => s + d.amount, 0);
+    const pendingTotal = donations.filter(d => !d.confirmed && !d.ignored).reduce((s, d) => s + d.amount, 0);
 
     // Hydrate the app data with this fund's details + real donations
     setData(prev => ({
@@ -3182,7 +3185,10 @@ function GuardianReviewFund({ data, setData, goTo }) {
 
   const donations = data.donations || [];
 
-  const handleConfirm = (donationId) => {
+  const handleConfirm = async (donationId) => {
+    // Persist to Supabase
+    await updateContributionStatus(donationId, "confirmed");
+
     const donation = donations.find(d => d.id === donationId);
     const confirmAmount = donation ? donation.amount : 0;
     const updated = donations.map(d =>
@@ -3191,9 +3197,24 @@ function GuardianReviewFund({ data, setData, goTo }) {
     setData(prev => ({
       ...prev,
       donations: updated,
-      // Move from pending to confirmed (raised)
       supporterContribution: (prev.supporterContribution || 0) + confirmAmount,
       pendingContribution: Math.max(0, (prev.pendingContribution || 0) - confirmAmount),
+    }));
+  };
+
+  const handleIgnore = async (donationId) => {
+    // Persist to Supabase
+    await updateContributionStatus(donationId, "rejected");
+
+    const donation = donations.find(d => d.id === donationId);
+    const ignoreAmount = donation ? donation.amount : 0;
+    const updated = donations.map(d =>
+      d.id === donationId ? { ...d, ignored: true } : d
+    );
+    setData(prev => ({
+      ...prev,
+      donations: updated,
+      pendingContribution: Math.max(0, (prev.pendingContribution || 0) - ignoreAmount),
     }));
   };
 
@@ -3329,7 +3350,7 @@ function GuardianReviewFund({ data, setData, goTo }) {
           </div>
         )}
         {donations.map((donation, i) => (
-          <div key={donation.id}>
+          <div key={donation.id} style={{ opacity: donation.ignored ? 0.4 : 1, transition: "opacity 0.3s ease" }}>
             {/* Donation item */}
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               {/* Details */}
@@ -3362,8 +3383,8 @@ function GuardianReviewFund({ data, setData, goTo }) {
                 )}
               </div>
 
-              {/* Action buttons — show for unconfirmed donations */}
-              {!donation.confirmed ? (
+              {/* Action buttons — show for unconfirmed, non-ignored donations */}
+              {!donation.confirmed && !donation.ignored ? (
                 <div style={{ display: "flex", gap: 20 }}>
                   <button
                     onClick={() => handleConfirm(donation.id)}
@@ -3378,15 +3399,7 @@ function GuardianReviewFund({ data, setData, goTo }) {
                     Confirm you've received
                   </button>
                   <button
-                    onClick={() => {
-                      const updated = donations.filter(d => d.id !== donation.id);
-                      setData(prev => ({
-                        ...prev,
-                        donations: updated,
-                        pendingContribution: Math.max(0, (prev.pendingContribution || 0) - donation.amount),
-                        supporterCount: Math.max(0, (prev.supporterCount || 0) - 1),
-                      }));
-                    }}
+                    onClick={() => handleIgnore(donation.id)}
                     style={{
                       backgroundColor: T.color.white, border: "2px solid #d6ff76",
                       borderRadius: 4, padding: "8px 16px", cursor: "pointer",
@@ -3397,6 +3410,13 @@ function GuardianReviewFund({ data, setData, goTo }) {
                     Ignore
                   </button>
                 </div>
+              ) : donation.ignored ? (
+                <span style={{
+                  fontFamily: T.font.body, fontSize: 12, fontWeight: 500, lineHeight: 1.4,
+                  color: T.color.neutral700,
+                }}>
+                  Ignored
+                </span>
               ) : (
                 <div style={{
                   display: "flex", alignItems: "center", gap: 6,
