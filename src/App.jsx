@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-import { signUpUser, signInUser, getCurrentUser, signOutUser, createFund, loadFundBySlug, loadFundsByCreator, recordContribution } from "./supabaseClient";
+import { signUpUser, signInUser, getCurrentUser, signOutUser, createFund, loadFundBySlug, loadFundsByCreator, getContributions, recordContribution } from "./supabaseClient";
 
 // ============================================================
 // DESIGN TOKENS
@@ -2950,8 +2950,26 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
     }).catch(() => setLoadingFunds(false));
   }, []);
 
-  const handleFundTap = (fund) => {
-    // Hydrate the app data with this fund's details so GuardianReviewFund works
+  const handleFundTap = async (fund) => {
+    // Fetch contributions from Supabase for this fund
+    const { contributions } = await getContributions(fund.id);
+    const methodNames = { cashapp: "Cash App", venmo: "Venmo", zelle: "Zelle", cash: "Cash" };
+    const donations = (contributions || []).map(c => ({
+      id: c.id,
+      name: c.supporter_name || "Anonymous",
+      amount: Number(c.amount) || 0,
+      method: methodNames[c.payment_method] || c.payment_method || "Venmo",
+      message: c.message || "",
+      time: new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      fundTitle: fund.title,
+      confirmed: c.status === "confirmed",
+    }));
+
+    // Calculate confirmed vs pending from real data
+    const confirmedTotal = donations.filter(d => d.confirmed).reduce((s, d) => s + d.amount, 0);
+    const pendingTotal = donations.filter(d => !d.confirmed).reduce((s, d) => s + d.amount, 0);
+
+    // Hydrate the app data with this fund's details + real donations
     setData(prev => ({
       ...prev,
       fundId: fund.id,
@@ -2966,10 +2984,10 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
       targetDate: fund.target_date || "",
       paymentHandles: fund.payment_handles || {},
       coverImage: fund.cover_photo_url || null,
-      supporterContribution: Number(fund.raised_amount) || 0,
-      supporterCount: fund.supporter_count || 0,
-      pendingContribution: 0,
-      donations: [],
+      supporterContribution: confirmedTotal,
+      supporterCount: donations.length,
+      pendingContribution: pendingTotal,
+      donations,
     }));
     goTo(20);
   };
