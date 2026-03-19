@@ -1454,7 +1454,13 @@ function FundPage({ data, goTo, goHome, isSignedIn }) {
       {/* Preview as supporter link */}
       <div style={{ padding: "0 16px", width: "100%", boxSizing: "border-box", textAlign: "center" }}>
         <button
-          onClick={() => goTo(12)}
+          onClick={() => {
+            if (data.fundSlug) {
+              window.open(`${window.location.origin}/fund/${data.fundSlug}`, "_blank");
+            } else {
+              goTo(12);
+            }
+          }}
           style={{
             background: "none", border: "none", cursor: "pointer", padding: 0,
             fontFamily: T.font.body, fontSize: 14, lineHeight: 1.6,
@@ -1867,17 +1873,19 @@ function SupportChooseAmount({ data, setData, goTo, goHome }) {
 
   const handlePreset = (val) => {
     setAmount(String(val));
+    setData(prev => ({ ...prev, supportAmount: val }));
   };
 
   const handleInputChange = (e) => {
     const raw = e.target.value.replace(/[^0-9.]/g, "");
     setAmount(raw);
+    const num = parseFloat(raw);
+    setData(prev => ({ ...prev, supportAmount: num > 0 ? num : 0 }));
   };
 
   const handleSwipeComplete = () => {
     const num = parseFloat(amount);
     if (!num || num <= 0) return;
-    setData(prev => ({ ...prev, supportAmount: num }));
     goTo(14);
   };
 
@@ -1958,7 +1966,7 @@ function SupportChooseAmount({ data, setData, goTo, goHome }) {
           <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary }}>RAISED</span>
-              <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary, fontWeight: 700 }}>{previewFormatted}</span>
+              <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary, fontWeight: 700 }}>{raisedFormatted}</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
               <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary }}>GOAL</span>
@@ -3068,14 +3076,7 @@ function GuardianReviewFund({ data, setData, goTo }) {
   const totalPct = goalNum > 0 ? Math.min((raised / goalNum) * 100, 100) : 0;
   const confirmedPct = goalNum > 0 ? Math.min((confirmed / goalNum) * 100, 100) : 0;
 
-  // Demo donations if none exist
-  const donations = (data.donations && data.donations.length > 0)
-    ? data.donations
-    : [
-        { id: 1, name: "Shane", amount: 150, method: "Venmo", time: "Just now", fundTitle, confirmed: false },
-        { id: 2, name: "Kristi", amount: 100, method: "Cash App", time: "2pm", fundTitle, confirmed: false },
-        { id: 3, name: "Atlas", amount: 200, method: "Venmo", time: "3 days ago", fundTitle, confirmed: false },
-      ];
+  const donations = data.donations || [];
 
   const handleConfirm = (donationId) => {
     const donation = donations.find(d => d.id === donationId);
@@ -3189,6 +3190,16 @@ function GuardianReviewFund({ data, setData, goTo }) {
         display: "flex", flexDirection: "column", gap: 24,
         padding: "0 16px", width: "100%", boxSizing: "border-box",
       }}>
+        {donations.length === 0 && (
+          <div style={{ textAlign: "center", padding: "32px 0" }}>
+            <p style={{
+              fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
+              color: T.color.neutral700, margin: 0,
+            }}>
+              No donations yet. When supporters contribute to this fund, their donations will appear here for you to review and confirm.
+            </p>
+          </div>
+        )}
         {donations.map((donation, i) => (
           <div key={donation.id}>
             {/* Donation item */}
