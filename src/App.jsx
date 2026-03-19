@@ -1151,7 +1151,8 @@ function ScreenComplete({ data, setData, onNext }) {
       setSaving(false);
       if (err) {
         console.warn("Supabase save error:", err);
-        setError(typeof err === "string" ? err : "Could not save — running in demo mode");
+        const msg = typeof err === "string" ? err : (err?.message || JSON.stringify(err));
+        setError(msg);
         setSaved(true);
         return;
       }
@@ -1161,7 +1162,15 @@ function ScreenComplete({ data, setData, onNext }) {
         setFundUrl(`${baseUrl}/fund/${fund.slug}`);
         // Store the fund ID and slug in data for later use
         setData(prev => ({ ...prev, fundId: fund.id, fundSlug: fund.slug }));
+      } else {
+        setError("Fund was created but no data returned. Please try again.");
+        setSaved(true);
       }
+    }).catch(e => {
+      setSaving(false);
+      setSaved(true);
+      setError(e?.message || "Unexpected error creating fund");
+      console.error("createFund exception:", e);
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -3009,11 +3018,15 @@ function GuardianHome({ data, goTo, goHome, isSignedIn }) {
               cursor: "pointer", width: 343, boxSizing: "border-box",
             }}
           >
-            {/* Thumbnail placeholder */}
+            {/* Thumbnail */}
             <div style={{
               width: 80, height: 80, borderRadius: 16, backgroundColor: T.color.neutral300,
-              flexShrink: 0,
-            }} />
+              flexShrink: 0, overflow: "hidden",
+            }}>
+              {data.coverImage && (
+                <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              )}
+            </div>
             {/* Text + progress */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
               <p style={{
@@ -3117,14 +3130,34 @@ function GuardianReviewFund({ data, setData, goTo }) {
       width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
       fontFamily: T.font.body, boxSizing: "border-box",
     }}>
-      {/* Header: back arrow */}
+      {/* Header: back arrow + Share */}
       <div style={{
-        display: "flex", alignItems: "center",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
         width: "100%", padding: "16px 16px", boxSizing: "border-box",
         borderBottom: `1px solid ${T.color.neutral500}`,
       }}>
         <button onClick={() => goTo(19, "left")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
           <ArrowBackIcon />
+        </button>
+        <button
+          onClick={() => {
+            const fundUrl = data.fundSlug ? `${window.location.origin}/fund/${data.fundSlug}` : "";
+            if (navigator.share && fundUrl) {
+              navigator.share({ title: fundTitle, text: `Support ${fundTitle}`, url: fundUrl }).catch(() => {});
+            } else if (fundUrl) {
+              navigator.clipboard.writeText(fundUrl).then(() => alert("Fund link copied!")).catch(() => {});
+            } else {
+              alert("No shareable link yet. The fund URL is created when you finish the setup flow.");
+            }
+          }}
+          style={{
+            backgroundColor: T.color.white, border: `2px solid #d6ff76`,
+            borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
+            fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
+            color: T.color.primary,
+          }}
+        >
+          Share
         </button>
       </div>
 
@@ -3152,8 +3185,12 @@ function GuardianReviewFund({ data, setData, goTo }) {
         }}>
           <div style={{
             width: 80, height: 80, borderRadius: 16, backgroundColor: T.color.neutral300,
-            flexShrink: 0,
-          }} />
+            flexShrink: 0, overflow: "hidden",
+          }}>
+            {data.coverImage && (
+              <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            )}
+          </div>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
             <p style={{
               fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
