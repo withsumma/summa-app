@@ -13,6 +13,9 @@ create table public.funds (
   -- Unique URL slug (auto-generated from title, e.g. "help-jason-recover")
   slug text unique not null,
 
+  -- Links this fund to the user account that created it
+  creator_id uuid references auth.users,
+
   -- Creator info (from setup screens 0-2)
   fund_for text check (fund_for in ('myself', 'someone')) not null,
   first_name text default '',
