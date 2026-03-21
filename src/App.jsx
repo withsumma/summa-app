@@ -1327,7 +1327,7 @@ function FundPage({ data, goTo, goHome, isSignedIn }) {
         width: "100%", padding: "16px 16px", boxSizing: "border-box",
         borderBottom: `1px solid ${T.color.neutral500}`,
       }}>
-        <button onClick={() => goTo(isSignedIn ? 19 : 21)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label={isSignedIn ? "Dashboard" : "Sign in"}>
+        <button onClick={() => goTo(isSignedIn ? 19 : 22)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label={isSignedIn ? "Dashboard" : "Sign in"}>
           <AccountIcon />
         </button>
         <button onClick={goHome} style={{
@@ -1710,7 +1710,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
         width: "100%", padding: "16px 16px", boxSizing: "border-box",
         borderBottom: `1px solid ${T.color.neutral500}`,
       }}>
-        <button onClick={() => goTo(isSignedIn ? 19 : 21)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label={isSignedIn ? "Dashboard" : "Sign in"}>
+        <button onClick={() => goTo(isSignedIn ? 19 : 22)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label={isSignedIn ? "Dashboard" : "Sign in"}>
           <AccountIcon />
         </button>
         <button onClick={goHome} style={{
@@ -3020,7 +3020,7 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
         width: "100%", padding: "16px 16px", boxSizing: "border-box",
         borderBottom: `1px solid ${T.color.neutral500}`,
       }}>
-        <button onClick={() => goTo(isSignedIn ? 19 : 21)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label={isSignedIn ? "Dashboard" : "Sign in"}>
+        <button onClick={() => goTo(isSignedIn ? 19 : 22)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label={isSignedIn ? "Dashboard" : "Sign in"}>
           <AccountIcon />
         </button>
         <button onClick={goHome} style={{
@@ -3170,6 +3170,194 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
 }
 
 // ============================================================
+// SCREEN: Guardian Fund Page — Fund detail view for the creator
+// ============================================================
+function GuardianFundPage({ data, goTo, goHome }) {
+  const goalNum = Number(data.goal) || 0;
+  const confirmed = data.supporterContribution || 0;
+  const pending = data.pendingContribution || 0;
+  const pct = goalNum > 0 ? Math.min((confirmed / goalNum) * 100, 100) : 0;
+  const totalPct = goalNum > 0 ? Math.min(((confirmed + pending) / goalNum) * 100, 100) : 0;
+  const fundTitle = data.title || "My Summa Fund";
+  const pendingCount = (data.donations || []).filter(d => !d.confirmed && !d.ignored).length;
+
+  return (
+    <div style={{
+      backgroundColor: "transparent", display: "flex", flexDirection: "column",
+      gap: 24, alignItems: "center", paddingTop: 48, paddingBottom: 48,
+      width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
+      fontFamily: T.font.body, boxSizing: "border-box",
+    }}>
+      {/* Header: back + pill buttons */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        width: "100%", padding: "16px 16px", boxSizing: "border-box",
+        borderBottom: `1px solid ${T.color.neutral500}`,
+      }}>
+        <button onClick={() => goTo(19, "left")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
+          <ArrowBackIcon />
+        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          {/* Share pill */}
+          <button
+            onClick={() => {
+              const fundUrl = data.fundSlug ? `${window.location.origin}/fund/${data.fundSlug}` : "";
+              if (navigator.share && fundUrl) {
+                navigator.share({ title: fundTitle, text: `Support ${fundTitle}`, url: fundUrl }).catch(() => {});
+              } else if (fundUrl) {
+                navigator.clipboard.writeText(fundUrl).then(() => alert("Fund link copied!")).catch(() => {});
+              } else {
+                alert("No shareable link yet.");
+              }
+            }}
+            style={{
+              backgroundColor: T.color.white, border: "2px solid #d6ff76",
+              borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
+              color: T.color.primary, display: "flex", alignItems: "center", gap: 8,
+            }}
+          >
+            Share
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          {/* Edit pill */}
+          <button
+            onClick={() => alert("This feature is coming soon! We're working on fund editing.")}
+            style={{
+              backgroundColor: T.color.white, border: "2px solid #d6ff76",
+              borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
+              color: T.color.primary, display: "flex", alignItems: "center", gap: 8,
+            }}
+          >
+            Edit
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M11 4H4C3.47 4 2.96 4.21 2.59 4.59C2.21 4.96 2 5.47 2 6V20C2 20.53 2.21 21.04 2.59 21.41C2.96 21.79 3.47 22 4 22H18C18.53 22 19.04 21.79 19.41 21.41C19.79 21.04 20 20.53 20 20V13" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M18.5 2.5C18.9 2.1 19.44 1.88 20 1.88C20.56 1.88 21.1 2.1 21.5 2.5C21.9 2.9 22.12 3.44 22.12 4C22.12 4.56 21.9 5.1 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          {/* Transactions pill — green gradient */}
+          <button
+            onClick={() => goTo(21)}
+            style={{
+              background: "linear-gradient(90deg, #d6ff76, #eafe7e)",
+              border: "2px solid #d6ff76",
+              borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
+              color: T.color.primary, display: "flex", alignItems: "center", gap: 8,
+              position: "relative",
+            }}
+          >
+            Transactions
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M13.73 21a2 2 0 01-3.46 0" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {pendingCount > 0 && (
+              <div style={{
+                position: "absolute", top: -4, right: -4,
+                width: 18, height: 18, borderRadius: T.radius.circle,
+                backgroundColor: "#ff4444", color: T.color.white,
+                fontSize: 10, fontWeight: 700, display: "flex",
+                alignItems: "center", justifyContent: "center",
+              }}>
+                {pendingCount}
+              </div>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Fund details */}
+      <div style={{
+        display: "flex", flexDirection: "column", gap: 24, alignItems: "center",
+        padding: "0 16px", width: "100%", boxSizing: "border-box",
+      }}>
+        {/* Title */}
+        <div style={{ width: "100%", textAlign: "left" }}>
+          <h1 style={{
+            fontFamily: T.font.heading, fontWeight: 700, fontSize: 28, lineHeight: 1.4,
+            color: T.color.primary, margin: 0,
+          }}>
+            {fundTitle}
+          </h1>
+        </div>
+
+        {/* Cover Image */}
+        <div style={{
+          width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
+          border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+          overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          {data.coverImage ? (
+            <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <svg width="100%" height="100%" viewBox="0 0 316 178" preserveAspectRatio="xMidYMid slice">
+              <rect width="316" height="178" fill={T.color.neutral300} />
+              <polygon points="60,160 130,50 200,160" fill="white" opacity="0.6" />
+              <polygon points="170,160 220,80 270,160" fill="white" opacity="0.4" />
+            </svg>
+          )}
+        </div>
+
+        {/* Progress Bar */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+          <div style={{
+            width: "100%", height: 8, backgroundColor: "rgba(143,143,143,0.2)",
+            borderRadius: 8, overflow: "hidden", position: "relative",
+          }}>
+            {totalPct > pct && (
+              <div style={{
+                position: "absolute", left: 0, top: -4,
+                width: `${totalPct}%`, height: 16, borderRadius: 8,
+                backgroundColor: T.color.primary, opacity: 0.4,
+              }} />
+            )}
+            <div style={{
+              position: "absolute", left: 0, top: -4,
+              width: `${pct}%`, height: 16, borderRadius: 8,
+              backgroundColor: T.color.primary,
+            }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+            <div>
+              <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary }}>RAISED</span>
+              <br />
+              <span style={{ fontFamily: T.font.body, fontSize: 12, fontWeight: 700, lineHeight: 1.4, color: T.color.primary }}>
+                ${confirmed.toLocaleString()}
+              </span>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary }}>GOAL</span>
+              <br />
+              <span style={{ fontFamily: T.font.body, fontSize: 12, fontWeight: 700, lineHeight: 1.4, color: T.color.primary }}>
+                ${goalNum.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Description */}
+        <div style={{
+          width: "100%", backgroundColor: "rgba(143,143,143,0.1)",
+          borderRadius: 8, padding: 8,
+        }}>
+          <p style={{
+            fontFamily: T.font.body, fontSize: 20, lineHeight: 1.6,
+            color: T.color.primary, margin: 0,
+          }}>
+            {data.description || "No description provided."}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // SCREEN: Guardian Review Fund — Donation List
 // ============================================================
 function GuardianReviewFund({ data, setData, goTo }) {
@@ -3231,7 +3419,7 @@ function GuardianReviewFund({ data, setData, goTo }) {
         width: "100%", padding: "16px 16px", boxSizing: "border-box",
         borderBottom: `1px solid ${T.color.neutral500}`,
       }}>
-        <button onClick={() => goTo(19, "left")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
+        <button onClick={() => goTo(20, "left")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
           <ArrowBackIcon />
         </button>
         <button
@@ -3889,8 +4077,9 @@ export default function SummaFundSetup() {
     17: <SupportComplete data={data} goTo={goTo} />,
     18: <FundPageSupporterShare data={data} onBack={() => goTo(12, "left")} />,
     19: <GuardianHome data={data} setData={setData} goTo={goTo} goHome={goHome} isSignedIn={isSignedIn} />,
-    20: <GuardianReviewFund data={data} setData={setData} goTo={goTo} />,
-    21: <SignInScreen
+    20: <GuardianFundPage data={data} goTo={goTo} goHome={goHome} />,
+    21: <GuardianReviewFund data={data} setData={setData} goTo={goTo} />,
+    22: <SignInScreen
       onSignIn={async ({ email, password }) => {
         const { user, error } = await signInUser({ email, password });
         if (error) {
