@@ -3898,6 +3898,7 @@ export default function SummaFundSetup() {
     goal: "",
     targetDate: "",
     paymentHandles: {},
+    coverImage: null,
   });
   const [slideDir, setSlideDir] = useState("right");
   const [animating, setAnimating] = useState(false);
@@ -3945,6 +3946,7 @@ export default function SummaFundSetup() {
             goal: fund.goal ? String(fund.goal) : "",
             targetDate: fund.target_date || "",
             paymentHandles: fund.payment_handles || {},
+            coverImage: fund.cover_photo_url || null,
             supporterContribution: Number(fund.raised_amount) || 0,
             supporterCount: fund.supporter_count || 0,
           });
