@@ -370,6 +370,99 @@ function ButtonMega({ title, description, selected, onClick }) {
   );
 }
 
+// --- Draggable Image Preview (drag to reposition) ---
+function DraggableImagePreview({ src, position = { x: 50, y: 50 }, onPositionChange, alt = "Preview", style = {} }) {
+  const containerRef = useRef(null);
+  const imgRef = useRef(null);
+  const dragging = useRef(false);
+  const startPos = useRef({ clientX: 0, clientY: 0, posX: 50, posY: 50 });
+  const [pos, setPos] = useState(position);
+  const [isDragging, setIsDragging] = useState(false);
+  const [showHint, setShowHint] = useState(true);
+
+  // Sync with external position prop
+  useEffect(() => { setPos(position); }, [position.x, position.y]);
+
+  // Hide hint after first drag
+  const hideHint = () => { if (showHint) setShowHint(false); };
+
+  const handleStart = (clientX, clientY) => {
+    dragging.current = true;
+    setIsDragging(true);
+    hideHint();
+    startPos.current = { clientX, clientY, posX: pos.x, posY: pos.y };
+  };
+
+  const handleMove = (clientX, clientY) => {
+    if (!dragging.current || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    // Convert pixel drag to percentage offset (inverted: drag right = image moves left = lower %)
+    const dx = ((clientX - startPos.current.clientX) / rect.width) * -100;
+    const dy = ((clientY - startPos.current.clientY) / rect.height) * -100;
+    const newX = Math.max(0, Math.min(100, startPos.current.posX + dx));
+    const newY = Math.max(0, Math.min(100, startPos.current.posY + dy));
+    setPos({ x: newX, y: newY });
+  };
+
+  const handleEnd = () => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    setIsDragging(false);
+    if (onPositionChange) onPositionChange(pos);
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseDown={(e) => { e.preventDefault(); handleStart(e.clientX, e.clientY); }}
+      onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
+      onMouseUp={handleEnd}
+      onMouseLeave={() => { if (dragging.current) handleEnd(); }}
+      onTouchStart={(e) => { handleStart(e.touches[0].clientX, e.touches[0].clientY); }}
+      onTouchMove={(e) => { e.preventDefault(); handleMove(e.touches[0].clientX, e.touches[0].clientY); }}
+      onTouchEnd={handleEnd}
+      style={{
+        width: "100%", aspectRatio: "316/178", borderRadius: T.radius.card,
+        overflow: "hidden", boxSizing: "border-box",
+        cursor: isDragging ? "grabbing" : "grab",
+        position: "relative", touchAction: "none",
+        userSelect: "none", WebkitUserSelect: "none",
+        ...style,
+      }}
+    >
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        draggable={false}
+        style={{
+          width: "100%", height: "100%", objectFit: "cover",
+          objectPosition: `${pos.x}% ${pos.y}%`,
+          pointerEvents: "none",
+        }}
+      />
+      {/* Drag hint overlay */}
+      {showHint && (
+        <div style={{
+          position: "absolute", bottom: 8, left: "50%", transform: "translateX(-50%)",
+          backgroundColor: "rgba(0,0,0,0.55)", borderRadius: 20,
+          padding: "6px 14px", display: "flex", alignItems: "center", gap: 6,
+          pointerEvents: "none",
+          animation: "fadeIn 0.3s ease",
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span style={{ fontFamily: T.font.body, fontSize: 11, color: "white", whiteSpace: "nowrap" }}>
+            Drag to reposition
+          </span>
+        </div>
+      )}
+      <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
+    </div>
+  );
+}
+
 // --- Screen Layout Wrapper ---
 function ScreenLayout({ children, onBack, activeStep, bottomContent, gap = 32 }) {
   return (
@@ -717,12 +810,13 @@ function SetupASummaFund5AddCoverPhoto({ data, setData, onNext, onBack }) {
         <div style={{
           width: "100%", maxWidth: 343, display: "flex", flexDirection: "column", gap: 16, alignItems: "center",
         }}>
-          <div style={{
-            width: "100%", aspectRatio: "316/178", borderRadius: T.radius.card,
-            overflow: "hidden", border: `2px solid ${T.color.green}`, boxSizing: "border-box",
-          }}>
-            <img src={data.coverImage} alt="Cover preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          </div>
+          <DraggableImagePreview
+            src={data.coverImage}
+            alt="Cover preview"
+            position={data.coverImagePosition || { x: 50, y: 50 }}
+            onPositionChange={(pos) => setData(d => ({ ...d, coverImagePosition: pos }))}
+            style={{ border: `2px solid ${T.color.green}` }}
+          />
           <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
             <button onClick={() => fileInputRef.current?.click()} style={{
               background: "none", border: "none", cursor: "pointer",
@@ -1097,7 +1191,7 @@ function ReviewSummaFund({ data, setData, onNext, onBack, goTo }) {
               overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               {data.coverImage ? (
-                <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
               ) : (
                 <svg width="80" height="60" viewBox="0 0 80 60" fill="none">
                   <rect width="80" height="60" fill={T.color.neutral300} />
@@ -1144,7 +1238,7 @@ function ReviewSummaFund({ data, setData, onNext, onBack, goTo }) {
                   border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
                   overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(block.imagePosition || {x:50,y:50}).x}% ${(block.imagePosition || {x:50,y:50}).y}%` }} />
                 </div>
               )}
             </ReviewSection>
@@ -1206,6 +1300,7 @@ function ReviewSummaFund({ data, setData, onNext, onBack, goTo }) {
 function AddToPage({ data, setData, onBack }) {
   const fileInputRef = useRef(null);
   const [blockImage, setBlockImage] = useState(null);
+  const [blockImagePosition, setBlockImagePosition] = useState({ x: 50, y: 50 });
   const [blockTitle, setBlockTitle] = useState("");
   const [blockDescription, setBlockDescription] = useState("");
 
@@ -1227,6 +1322,7 @@ function AddToPage({ data, setData, onBack }) {
     const newBlock = {
       id: Date.now(),
       image: blockImage,
+      imagePosition: blockImagePosition,
       title: blockTitle,
       description: blockDescription,
     };
@@ -1273,12 +1369,13 @@ function AddToPage({ data, setData, onBack }) {
           <div style={{
             width: "100%", maxWidth: 343, display: "flex", flexDirection: "column", gap: 16, alignItems: "center",
           }}>
-            <div style={{
-              width: "100%", aspectRatio: "316/178", borderRadius: T.radius.card,
-              overflow: "hidden", border: `2px solid ${T.color.green}`, boxSizing: "border-box",
-            }}>
-              <img src={blockImage} alt="Block preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            </div>
+            <DraggableImagePreview
+              src={blockImage}
+              alt="Block preview"
+              position={blockImagePosition}
+              onPositionChange={setBlockImagePosition}
+              style={{ border: `2px solid ${T.color.green}` }}
+            />
             <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
               <button onClick={() => fileInputRef.current?.click()} style={{
                 background: "none", border: "none", cursor: "pointer",
@@ -1575,7 +1672,7 @@ function FundPage({ data, goTo, goHome, isSignedIn }) {
           overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           {data.coverImage ? (
-            <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
           ) : (
             <svg width="100%" height="100%" viewBox="0 0 316 178" preserveAspectRatio="xMidYMid slice">
               <rect width="316" height="178" fill={T.color.neutral300} />
@@ -1641,7 +1738,7 @@ function FundPage({ data, goTo, goHome, isSignedIn }) {
                     border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
                     overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
-                    <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(block.imagePosition || {x:50,y:50}).x}% ${(block.imagePosition || {x:50,y:50}).y}%` }} />
                   </div>
                 )}
                 <div style={{
@@ -2164,7 +2261,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
           overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           {data.coverImage ? (
-            <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
           ) : (
             <svg width="100%" height="100%" viewBox="0 0 316 178" preserveAspectRatio="xMidYMid slice">
               <rect width="316" height="178" fill={T.color.neutral300} />
@@ -2256,7 +2353,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
                     border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
                     overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
-                    <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(block.imagePosition || {x:50,y:50}).x}% ${(block.imagePosition || {x:50,y:50}).y}%` }} />
                   </div>
                 )}
                 {/* Block info */}
@@ -3471,6 +3568,7 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
       targetDate: fund.target_date || "",
       paymentHandles: fund.payment_handles || {},
       coverImage: fund.cover_photo_url || null,
+      coverImagePosition: fund.cover_image_position || { x: 50, y: 50 },
       contentBlocks: fund.content_blocks || [],
       supporterContribution: confirmedTotal,
       supporterCount: donations.length,
@@ -3581,7 +3679,7 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
                   flexShrink: 0, overflow: "hidden",
                 }}>
                   {fund.cover_photo_url && (
-                    <img src={fund.cover_photo_url} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img src={fund.cover_photo_url} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(fund.cover_image_position || {x:50,y:50}).x}% ${(fund.cover_image_position || {x:50,y:50}).y}%` }} />
                   )}
                 </div>
                 {/* Text + progress */}
@@ -3766,7 +3864,7 @@ function GuardianFundPage({ data, goTo, goHome }) {
           overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           {data.coverImage ? (
-            <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
           ) : (
             <svg width="100%" height="100%" viewBox="0 0 316 178" preserveAspectRatio="xMidYMid slice">
               <rect width="316" height="178" fill={T.color.neutral300} />
@@ -3849,7 +3947,7 @@ function GuardianFundPage({ data, goTo, goHome }) {
                     border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
                     overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
-                    <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(block.imagePosition || {x:50,y:50}).x}% ${(block.imagePosition || {x:50,y:50}).y}%` }} />
                   </div>
                 )}
                 <div style={{
@@ -3997,7 +4095,7 @@ function GuardianReviewFund({ data, setData, goTo }) {
             flexShrink: 0, overflow: "hidden",
           }}>
             {data.coverImage && (
-              <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
             )}
           </div>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
@@ -4425,6 +4523,7 @@ export default function SummaFundSetup() {
     targetDate: "",
     paymentHandles: {},
     coverImage: null,
+    coverImagePosition: { x: 50, y: 50 },
     contentBlocks: [],
   });
   const [slideDir, setSlideDir] = useState("right");

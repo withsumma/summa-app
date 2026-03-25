@@ -132,6 +132,7 @@ export async function createFund(data) {
       target_date: data.targetDate || null,
       payment_handles: data.paymentHandles || {},
       cover_photo_url: data.coverImage || null,
+      cover_image_position: data.coverImagePosition || { x: 50, y: 50 },
       content_blocks: data.contentBlocks || [],
     })
     .select()
