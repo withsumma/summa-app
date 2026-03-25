@@ -217,16 +217,25 @@ export async function updateFund(fundId, updates) {
 export async function deleteFund(fundId) {
   if (!supabase) return { error: "Supabase not configured" };
 
-  // Delete associated contributions first
-  await supabase
+  // Delete associated contributions first (ignore errors — fund may have none)
+  const { error: contribError } = await supabase
     .from("contributions")
     .delete()
     .eq("fund_id", fundId);
+  if (contribError) console.warn("Error deleting contributions:", contribError);
 
-  const { error } = await supabase
+  const { error, data: deleted } = await supabase
     .from("funds")
     .delete()
-    .eq("id", fundId);
+    .eq("id", fundId)
+    .select();
+
+  console.log("deleteFund result:", { fundId, error, deleted });
+
+  // If RLS silently blocked the delete (no error but nothing deleted), surface it
+  if (!error && (!deleted || deleted.length === 0)) {
+    return { error: "Fund could not be deleted. You may need to enable DELETE in your Supabase RLS policies for the funds table." };
+  }
 
   return { error };
 }

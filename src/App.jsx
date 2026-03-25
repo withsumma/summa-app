@@ -3684,7 +3684,7 @@ function FundPageSupporterShare({ data, onBack }) {
 // ============================================================
 // SCREEN: Guardian Dashboard (Home)
 // ============================================================
-function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
+function GuardianHome({ data, setData, goTo, goHome, isSignedIn, refreshKey }) {
   const [funds, setFunds] = useState([]);
   const [loadingFunds, setLoadingFunds] = useState(true);
 
@@ -3709,7 +3709,7 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
       setFunds(enriched);
       setLoadingFunds(false);
     }).catch(() => setLoadingFunds(false));
-  }, []);
+  }, [refreshKey]);
 
   const handleFundTap = async (fund) => {
     // Fetch contributions from Supabase for this fund
@@ -4926,6 +4926,7 @@ export default function SummaFundSetup() {
   const [animating, setAnimating] = useState(false);
   const [returnTo, setReturnTo] = useState(null); // screen index to return to after editing
   const [editingBlockId, setEditingBlockId] = useState(null); // content block ID being edited
+  const [fundsRefreshKey, setFundsRefreshKey] = useState(0); // increment to re-fetch funds on dashboard
 
   // ---- SESSION PERSISTENCE ----
   // On app load, check if the user has an existing session (returning user)
@@ -5107,7 +5108,7 @@ export default function SummaFundSetup() {
     16: <SupportSenderDetails data={data} setData={setData} goTo={goTo} goHome={goHome} />,
     17: <SupportComplete data={data} goTo={goTo} />,
     18: <FundPageSupporterShare data={data} onBack={() => goTo(12, "left")} />,
-    19: <GuardianHome data={data} setData={setData} goTo={goTo} goHome={goHome} isSignedIn={isSignedIn} />,
+    19: <GuardianHome data={data} setData={setData} goTo={goTo} goHome={goHome} isSignedIn={isSignedIn} refreshKey={fundsRefreshKey} />,
     20: <GuardianFundPage data={data} goTo={goTo} goHome={goHome} />,
     21: <GuardianReviewFund data={data} setData={setData} goTo={goTo} />,
     22: <SignInScreen
@@ -5141,6 +5142,7 @@ export default function SummaFundSetup() {
         if (data.fundId) {
           const { error } = await updateFund(data.fundId, data);
           if (error) { alert("Failed to save changes: " + (error.message || error)); return; }
+          setFundsRefreshKey(k => k + 1);
           alert("Changes saved!");
           goTo(20, "left");
         }
@@ -5149,13 +5151,14 @@ export default function SummaFundSetup() {
         if (data.fundId) {
           const { error } = await deleteFund(data.fundId);
           if (error) { alert("Failed to delete fund: " + (error.message || error)); return; }
-          // Reset data and go to dashboard
+          // Reset data, bump refresh key, and go to dashboard
           setData(prev => ({
             fundFor: null, firstName: prev.firstName || "", lastName: prev.lastName || "",
             recipientName: "", title: "", description: "", goal: "", targetDate: "",
             paymentHandles: {}, coverImage: null, coverImagePosition: { x: 50, y: 50 },
             contentBlocks: [], email: prev.email || "", userId: prev.userId || null,
           }));
+          setFundsRefreshKey(k => k + 1);
           goTo(19);
         }
       }}
