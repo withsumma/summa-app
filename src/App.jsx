@@ -1233,8 +1233,25 @@ function ReviewSummaFund({ data, setData, onNext, onBack, goTo }) {
             backgroundColor: T.color.white, borderRadius: 24,
             padding: "0 16px", width: "100%", boxSizing: "border-box",
           }}>
-            {/* Plan Item header + image */}
-            <ReviewSection label="Plan Item" onEdit={() => handleRemoveBlock(block.id)}>
+            {/* Remove button + Plan Item header + Edit */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "16px 0" }}>
+              <button
+                onClick={() => handleRemoveBlock(block.id)}
+                style={{
+                  background: "none", border: "none", cursor: "pointer", padding: 0,
+                  display: "flex", alignItems: "center", gap: 4,
+                }}
+                aria-label="Remove plan item"
+              >
+                <span style={{ fontFamily: T.font.body, fontWeight: 600, fontSize: 12, color: "#E53935" }}>Remove</span>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 4h12M5.333 4V2.667a1.333 1.333 0 011.334-1.334h2.666a1.333 1.333 0 011.334 1.334V4m2 0v9.333a1.333 1.333 0 01-1.334 1.334H4.667a1.333 1.333 0 01-1.334-1.334V4h9.334z" stroke="#E53935" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              <EditButton onClick={() => goTo(23)} />
+            </div>
+            {/* Plan Item image */}
+            <div style={{ paddingBottom: 0 }}>
               {block.image && (
                 <div style={{
                   width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
@@ -1244,7 +1261,7 @@ function ReviewSummaFund({ data, setData, onNext, onBack, goTo }) {
                   <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(block.imagePosition || {x:50,y:50}).x}% ${(block.imagePosition || {x:50,y:50}).y}%` }} />
                 </div>
               )}
-            </ReviewSection>
+            </div>
 
             {/* Block title + description */}
             <div style={{
@@ -3626,7 +3643,16 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
         {/* Create a fund button */}
         <div style={{ padding: "0 16px" }}>
           <button
-            onClick={() => goTo(0)}
+            onClick={() => {
+              // Reset all fund data so the new fund starts fresh
+              setData({
+                fundFor: null, firstName: data.firstName || "", lastName: data.lastName || "",
+                recipientName: "", title: "", description: "", goal: "", targetDate: "",
+                paymentHandles: {}, coverImage: null, coverImagePosition: { x: 50, y: 50 },
+                contentBlocks: [], email: data.email || "", userId: data.userId || null,
+              });
+              goTo(0);
+            }}
             style={{
               width: "100%", height: 60, borderRadius: T.radius.circle,
               background: "linear-gradient(90deg, #d6ff76, #eafe7e)",
@@ -4677,7 +4703,12 @@ export default function SummaFundSetup() {
     else if (screen === 8) goTo(7, "left");
     else if (screen === 9) {
       // Reset
-      setData({ fundFor: null, firstName: "", lastName: "", recipientName: "", title: "", description: "", goal: "", targetDate: "" });
+      setData(prev => ({
+        fundFor: null, firstName: prev.firstName || "", lastName: prev.lastName || "",
+        recipientName: "", title: "", description: "", goal: "", targetDate: "",
+        paymentHandles: {}, coverImage: null, coverImagePosition: { x: 50, y: 50 },
+        contentBlocks: [], email: prev.email || "", userId: prev.userId || null,
+      }));
       goTo(0, "left");
     }
   };
