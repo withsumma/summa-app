@@ -1049,10 +1049,23 @@ function ReviewSection({ label, children, onEdit, noBorder = false }) {
   );
 }
 
-function ReviewSummaFund({ data, onNext, onBack, goTo }) {
+function ReviewSummaFund({ data, setData, onNext, onBack, goTo }) {
   const goalFormatted = data.goal
     ? `$${Number(data.goal).toLocaleString()}`
     : "$0";
+  const blocks = data.contentBlocks || [];
+  const hasBlocks = blocks.length > 0;
+
+  const handleRemoveBlock = (blockId) => {
+    setData(d => ({ ...d, contentBlocks: (d.contentBlocks || []).filter(b => b.id !== blockId) }));
+  };
+
+  // Plus icon for the "Add to page/plan" button
+  const PlusIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 3v10M3 8h10" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
 
   return (
     <div style={{
@@ -1071,13 +1084,13 @@ function ReviewSummaFund({ data, onNext, onBack, goTo }) {
           </p>
         </div>
 
-        {/* Review card */}
+        {/* Overview card — label changes to "Overview" when content blocks exist */}
         <div style={{
           backgroundColor: T.color.white, borderRadius: 24,
           padding: "0 16px", width: "100%", boxSizing: "border-box",
         }}>
-          {/* Cover */}
-          <ReviewSection label="Cover" onEdit={() => goTo(6)}>
+          {/* Cover / Overview */}
+          <ReviewSection label={hasBlocks ? "Overview" : "Cover"} onEdit={() => goTo(6)}>
             <div style={{
               width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
               border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
@@ -1117,6 +1130,60 @@ function ReviewSummaFund({ data, onNext, onBack, goTo }) {
           </ReviewSection>
         </div>
 
+        {/* Content block cards */}
+        {blocks.map((block) => (
+          <div key={block.id} style={{
+            backgroundColor: T.color.white, borderRadius: 24,
+            padding: "0 16px", width: "100%", boxSizing: "border-box",
+          }}>
+            {/* Plan Item header + image */}
+            <ReviewSection label="Plan Item" onEdit={() => handleRemoveBlock(block.id)}>
+              {block.image && (
+                <div style={{
+                  width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
+                  border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+                  overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+              )}
+            </ReviewSection>
+
+            {/* Block title + description */}
+            <div style={{
+              display: "flex", flexDirection: "column", gap: 8,
+              padding: "16px 0", width: "100%",
+              borderTop: `1px solid ${T.color.neutral300}`,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+                <span style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 16, lineHeight: 1.6, color: T.color.primary, flex: 1, minWidth: 0 }}>
+                  {block.title || "Untitled"}
+                </span>
+              </div>
+              {block.description && (
+                <p style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary, margin: 0 }}>
+                  {block.description}
+                </p>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* Add to page / Add to plan button */}
+        <button
+          onClick={() => goTo(23)}
+          style={{
+            backgroundColor: T.color.white, border: `2px solid #d6ff76`,
+            borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
+            fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
+            color: T.color.primary, display: "flex", alignItems: "center", justifyContent: "center",
+            gap: 8, whiteSpace: "nowrap", alignSelf: "flex-start",
+          }}
+        >
+          {hasBlocks ? "Add to plan" : "Add to page"}
+          <PlusIcon />
+        </button>
+
         {/* CTA section */}
         <div style={{ display: "flex", flexDirection: "column", gap: 20, alignItems: "center", width: "100%", paddingBottom: 60 }}>
           <ButtonPrimary text="Publish" onClick={onNext} />
@@ -1128,6 +1195,150 @@ function ReviewSummaFund({ data, onNext, onBack, goTo }) {
             Save as Draft
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// SCREEN: Add To Page — add a content block to the fund
+// ============================================================
+function AddToPage({ data, setData, onBack }) {
+  const fileInputRef = useRef(null);
+  const [blockImage, setBlockImage] = useState(null);
+  const [blockTitle, setBlockTitle] = useState("");
+  const [blockDescription, setBlockDescription] = useState("");
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setBlockImage(ev.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setBlockImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleAdd = () => {
+    const newBlock = {
+      id: Date.now(),
+      image: blockImage,
+      title: blockTitle,
+      description: blockDescription,
+    };
+    setData(d => ({ ...d, contentBlocks: [...(d.contentBlocks || []), newBlock] }));
+    onBack();
+  };
+
+  const canAdd = blockTitle.trim().length > 0;
+
+  return (
+    <div style={{
+      backgroundColor: "transparent", display: "flex", flexDirection: "column",
+      gap: 48, width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
+      fontFamily: T.font.body, paddingTop: 80, paddingBottom: 60, boxSizing: "border-box",
+    }}>
+      {/* Back arrow */}
+      <div style={{ padding: "0 16px" }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M12 19l-7-7 7-7" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 48, padding: "0 16px", boxSizing: "border-box" }}>
+        {/* Headline */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
+          <h2 style={{ fontFamily: T.font.heading, fontWeight: 500, fontSize: 24, lineHeight: 1.4, color: T.color.primary, margin: 0 }}>
+            Add more information{"\n"}about your plans for this fund
+          </h2>
+        </div>
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,video/*"
+          onChange={handleFileSelect}
+          style={{ display: "none" }}
+        />
+
+        {/* Upload area / Preview */}
+        {blockImage ? (
+          <div style={{
+            width: "100%", maxWidth: 343, display: "flex", flexDirection: "column", gap: 16, alignItems: "center",
+          }}>
+            <div style={{
+              width: "100%", aspectRatio: "316/178", borderRadius: T.radius.card,
+              overflow: "hidden", border: `2px solid ${T.color.green}`, boxSizing: "border-box",
+            }}>
+              <img src={blockImage} alt="Block preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+            <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+              <button onClick={() => fileInputRef.current?.click()} style={{
+                background: "none", border: "none", cursor: "pointer",
+                fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary,
+                textDecoration: "underline", padding: 0,
+              }}>
+                Change photo
+              </button>
+              <button onClick={removeImage} style={{
+                background: "none", border: "none", cursor: "pointer",
+                fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary,
+                textDecoration: "underline", padding: 0,
+              }}>
+                Remove
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div style={{
+            border: `2px solid ${T.color.neutral500}`, borderRadius: T.radius.input,
+            padding: 12, display: "flex", flexDirection: "column", gap: 24,
+            alignItems: "center", justifyContent: "center", width: "100%", maxWidth: 343,
+            boxSizing: "border-box", backgroundColor: T.color.white,
+          }}>
+            <GalleryIcon />
+            <p style={{ fontFamily: T.font.body, fontSize: 20, lineHeight: 1.6, color: T.color.primary, margin: 0 }}>
+              Upload photo
+            </p>
+            <ButtonPrimary text="Add media" onClick={() => fileInputRef.current?.click()} />
+          </div>
+        )}
+
+        {/* Title + Description inputs */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <InputField
+            label="Title"
+            value={blockTitle}
+            onChange={setBlockTitle}
+          />
+          <InputField
+            label="Description"
+            value={blockDescription}
+            onChange={setBlockDescription}
+            multiline
+            characterCount
+            maxChars={1000}
+          />
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 20, alignItems: "center", width: "100%", padding: "0 16px", boxSizing: "border-box" }}>
+        <ButtonPrimary text="Add to page" onClick={handleAdd} disabled={!canAdd} />
+        <button onClick={onBack} style={{
+          background: "none", border: "none", cursor: "pointer",
+          fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
+          color: T.color.primary, textDecoration: "underline", padding: 0,
+        }}>
+          Cancel
+        </button>
       </div>
     </div>
   );
@@ -1406,6 +1617,59 @@ function FundPage({ data, goTo, goHome, isSignedIn }) {
             {data.description || "No description provided."}
           </p>
         </div>
+
+        {/* Content Blocks — "More info about this fund" */}
+        {(data.contentBlocks || []).length > 0 && (
+          <div style={{
+            display: "flex", flexDirection: "column", gap: 24, width: "100%",
+            padding: "24px 0",
+          }}>
+            <h2 style={{
+              fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
+              color: T.color.primary, margin: 0, textAlign: "center", width: "100%",
+            }}>
+              More info about this fund
+            </h2>
+            {(data.contentBlocks || []).map((block) => (
+              <div key={block.id} style={{
+                display: "flex", flexDirection: "column", width: "100%",
+                borderRadius: 16, overflow: "hidden",
+              }}>
+                {block.image && (
+                  <div style={{
+                    width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
+                    border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+                    overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                )}
+                <div style={{
+                  backgroundColor: "rgba(143,143,143,0.1)", padding: 8,
+                  display: "flex", flexDirection: "column", gap: 10,
+                  boxSizing: "border-box",
+                }}>
+                  {block.title && (
+                    <p style={{
+                      fontFamily: T.font.body, fontWeight: 700, fontSize: 20, lineHeight: 1.6,
+                      color: T.color.primary, margin: 0,
+                    }}>
+                      {block.title}
+                    </p>
+                  )}
+                  {block.description && (
+                    <p style={{
+                      fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
+                      color: T.color.primary, margin: 0,
+                    }}>
+                      {block.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Share + Edit Buttons */}
@@ -1814,6 +2078,61 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
             {data.description || "No description provided."}
           </p>
         </div>
+
+        {/* Content Blocks — "More info about this fund" */}
+        {(data.contentBlocks || []).length > 0 && (
+          <div style={{
+            display: "flex", flexDirection: "column", gap: 24, width: "100%",
+            padding: "24px 0",
+          }}>
+            <h2 style={{
+              fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
+              color: T.color.primary, margin: 0, textAlign: "center", width: "100%",
+            }}>
+              More info about this fund
+            </h2>
+            {(data.contentBlocks || []).map((block) => (
+              <div key={block.id} style={{
+                display: "flex", flexDirection: "column", width: "100%",
+                borderRadius: 16, overflow: "hidden",
+              }}>
+                {/* Block image */}
+                {block.image && (
+                  <div style={{
+                    width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
+                    border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+                    overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                )}
+                {/* Block info */}
+                <div style={{
+                  backgroundColor: "rgba(143,143,143,0.1)", padding: 8,
+                  display: "flex", flexDirection: "column", gap: 10,
+                  boxSizing: "border-box",
+                }}>
+                  {block.title && (
+                    <p style={{
+                      fontFamily: T.font.body, fontWeight: 700, fontSize: 20, lineHeight: 1.6,
+                      color: T.color.primary, margin: 0,
+                    }}>
+                      {block.title}
+                    </p>
+                  )}
+                  {block.description && (
+                    <p style={{
+                      fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
+                      color: T.color.primary, margin: 0,
+                    }}>
+                      {block.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Support CTA Button */}
@@ -2999,6 +3318,7 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn }) {
       targetDate: fund.target_date || "",
       paymentHandles: fund.payment_handles || {},
       coverImage: fund.cover_photo_url || null,
+      contentBlocks: fund.content_blocks || [],
       supporterContribution: confirmedTotal,
       supporterCount: donations.length,
       pendingContribution: pendingTotal,
@@ -3352,6 +3672,59 @@ function GuardianFundPage({ data, goTo, goHome }) {
             {data.description || "No description provided."}
           </p>
         </div>
+
+        {/* Content Blocks — "More info about this fund" */}
+        {(data.contentBlocks || []).length > 0 && (
+          <div style={{
+            display: "flex", flexDirection: "column", gap: 24, width: "100%",
+            padding: "24px 0",
+          }}>
+            <h2 style={{
+              fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
+              color: T.color.primary, margin: 0, textAlign: "center", width: "100%",
+            }}>
+              More info about this fund
+            </h2>
+            {(data.contentBlocks || []).map((block) => (
+              <div key={block.id} style={{
+                display: "flex", flexDirection: "column", width: "100%",
+                borderRadius: 16, overflow: "hidden",
+              }}>
+                {block.image && (
+                  <div style={{
+                    width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
+                    border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+                    overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                )}
+                <div style={{
+                  backgroundColor: "rgba(143,143,143,0.1)", padding: 8,
+                  display: "flex", flexDirection: "column", gap: 10,
+                  boxSizing: "border-box",
+                }}>
+                  {block.title && (
+                    <p style={{
+                      fontFamily: T.font.body, fontWeight: 700, fontSize: 20, lineHeight: 1.6,
+                      color: T.color.primary, margin: 0,
+                    }}>
+                      {block.title}
+                    </p>
+                  )}
+                  {block.description && (
+                    <p style={{
+                      fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
+                      color: T.color.primary, margin: 0,
+                    }}>
+                      {block.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -3899,6 +4272,7 @@ export default function SummaFundSetup() {
     targetDate: "",
     paymentHandles: {},
     coverImage: null,
+    contentBlocks: [],
   });
   const [slideDir, setSlideDir] = useState("right");
   const [animating, setAnimating] = useState(false);
@@ -3947,6 +4321,7 @@ export default function SummaFundSetup() {
             targetDate: fund.target_date || "",
             paymentHandles: fund.payment_handles || {},
             coverImage: fund.cover_photo_url || null,
+            contentBlocks: fund.content_blocks || [],
             supporterContribution: Number(fund.raised_amount) || 0,
             supporterCount: fund.supporter_count || 0,
           });
@@ -4067,7 +4442,7 @@ export default function SummaFundSetup() {
     5: <SetupASummaFund4 data={data} setData={setData} onNext={next} onBack={back} />,
     6: <SetupASummaFund5AddCoverPhoto data={data} setData={setData} onNext={next} onBack={back} />,
     7: <SetupASummaFund6LinkPaymentMethods data={data} setData={setData} onNext={next} onBack={back} />,
-    8: <ReviewSummaFund data={data} onNext={next} onBack={back} goTo={(dest) => { setReturnTo(8); goTo(dest); }} />,
+    8: <ReviewSummaFund data={data} setData={setData} onNext={next} onBack={back} goTo={(dest) => { setReturnTo(8); goTo(dest); }} />,
     9: <ScreenComplete data={data} setData={setData} onNext={next} />,
     10: <FundPage data={data} goTo={goTo} goHome={goHome} isSignedIn={isSignedIn} />,
     11: <FundPageShare data={data} onBack={() => goTo(10, "left")} />,
@@ -4101,6 +4476,7 @@ export default function SummaFundSetup() {
       }}
       onBack={() => goTo(10, "left")}
     />,
+    23: <AddToPage data={data} setData={setData} onBack={() => goTo(8, "left")} />,
   };
 
   if (showStart) {
