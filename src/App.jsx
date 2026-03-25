@@ -4537,7 +4537,7 @@ export default function SummaFundSetup() {
       return;
     }
     if (screen === 0) {
-      goTo(data.fundFor === "myself" ? 1 : 2);
+      goTo(data.fundFor === "myself" ? 3 : 2);
     } else if (screen === 1 || screen === 2) {
       goTo(3);
     } else if (screen === 3) {
@@ -4567,7 +4567,7 @@ export default function SummaFundSetup() {
     }
     if (screen === 0) return;
     if (screen === 1 || screen === 2) goTo(0, "left");
-    else if (screen === 3) goTo(data.fundFor === "myself" ? 1 : 2, "left");
+    else if (screen === 3) goTo(data.fundFor === "myself" ? 0 : 2, "left");
     else if (screen === 4) goTo(3, "left");
     else if (screen === 5) goTo(4, "left");
     else if (screen === 6) goTo(5, "left");
