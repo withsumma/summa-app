@@ -377,11 +377,12 @@ function DraggableImagePreview({ src, position = { x: 50, y: 50 }, onPositionCha
   const dragging = useRef(false);
   const startPos = useRef({ clientX: 0, clientY: 0, posX: 50, posY: 50 });
   const [pos, setPos] = useState(position);
+  const latestPos = useRef(position);
   const [isDragging, setIsDragging] = useState(false);
   const [showHint, setShowHint] = useState(true);
 
   // Sync with external position prop
-  useEffect(() => { setPos(position); }, [position.x, position.y]);
+  useEffect(() => { setPos(position); latestPos.current = position; }, [position.x, position.y]);
 
   // Hide hint after first drag
   const hideHint = () => { if (showHint) setShowHint(false); };
@@ -390,7 +391,7 @@ function DraggableImagePreview({ src, position = { x: 50, y: 50 }, onPositionCha
     dragging.current = true;
     setIsDragging(true);
     hideHint();
-    startPos.current = { clientX, clientY, posX: pos.x, posY: pos.y };
+    startPos.current = { clientX, clientY, posX: latestPos.current.x, posY: latestPos.current.y };
   };
 
   const handleMove = (clientX, clientY) => {
@@ -401,14 +402,16 @@ function DraggableImagePreview({ src, position = { x: 50, y: 50 }, onPositionCha
     const dy = ((clientY - startPos.current.clientY) / rect.height) * -100;
     const newX = Math.max(0, Math.min(100, startPos.current.posX + dx));
     const newY = Math.max(0, Math.min(100, startPos.current.posY + dy));
-    setPos({ x: newX, y: newY });
+    const newPos = { x: newX, y: newY };
+    setPos(newPos);
+    latestPos.current = newPos;
   };
 
   const handleEnd = () => {
     if (!dragging.current) return;
     dragging.current = false;
     setIsDragging(false);
-    if (onPositionChange) onPositionChange(pos);
+    if (onPositionChange) onPositionChange(latestPos.current);
   };
 
   return (
