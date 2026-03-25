@@ -1146,7 +1146,7 @@ function ReviewSection({ label, children, onEdit, noBorder = false }) {
   );
 }
 
-function ReviewSummaFund({ data, setData, onNext, onBack, goTo }) {
+function ReviewSummaFund({ data, setData, onNext, onBack, goTo, onEditBlock }) {
   const goalFormatted = data.goal
     ? `$${Number(data.goal).toLocaleString()}`
     : "$0";
@@ -1248,7 +1248,7 @@ function ReviewSummaFund({ data, setData, onNext, onBack, goTo }) {
                   <path d="M2 4h12M5.333 4V2.667a1.333 1.333 0 011.334-1.334h2.666a1.333 1.333 0 011.334 1.334V4m2 0v9.333a1.333 1.333 0 01-1.334 1.334H4.667a1.333 1.333 0 01-1.334-1.334V4h9.334z" stroke="#E53935" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
-              <EditButton onClick={() => goTo(23)} />
+              <EditButton onClick={() => onEditBlock(block.id)} />
             </div>
             {/* Plan Item image */}
             <div style={{ paddingBottom: 0 }}>
@@ -1449,6 +1449,164 @@ function AddToPage({ data, setData, onBack }) {
       {/* CTA */}
       <div style={{ display: "flex", flexDirection: "column", gap: 20, alignItems: "center", width: "100%", padding: "0 16px", boxSizing: "border-box" }}>
         <ButtonPrimary text="Add to page" onClick={handleAdd} disabled={!canAdd} />
+        <button onClick={onBack} style={{
+          background: "none", border: "none", cursor: "pointer",
+          fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
+          color: T.color.primary, textDecoration: "underline", padding: 0,
+        }}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// SCREEN: Edit Content Block (edit existing plan item)
+// ============================================================
+function EditContentBlock({ data, setData, blockId, onBack }) {
+  const existingBlock = (data.contentBlocks || []).find(b => b.id === blockId);
+  const fileInputRef = useRef(null);
+  const [blockImage, setBlockImage] = useState(existingBlock?.image || null);
+  const [blockImagePosition, setBlockImagePosition] = useState(existingBlock?.imagePosition || { x: 50, y: 50 });
+  const [blockTitle, setBlockTitle] = useState(existingBlock?.title || "");
+  const [blockDescription, setBlockDescription] = useState(existingBlock?.description || "");
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setBlockImage(ev.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setBlockImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSave = () => {
+    setData(d => ({
+      ...d,
+      contentBlocks: (d.contentBlocks || []).map(b =>
+        b.id === blockId
+          ? { ...b, image: blockImage, imagePosition: blockImagePosition, title: blockTitle, description: blockDescription }
+          : b
+      ),
+    }));
+    onBack();
+  };
+
+  const canSave = blockTitle.trim().length > 0;
+
+  if (!existingBlock) {
+    // Block not found — go back
+    return (
+      <div style={{ padding: 32, textAlign: "center" }}>
+        <p>Content block not found.</p>
+        <button onClick={onBack}>Go back</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      backgroundColor: "transparent", display: "flex", flexDirection: "column",
+      gap: 48, width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
+      fontFamily: T.font.body, paddingTop: 80, paddingBottom: 60, boxSizing: "border-box",
+    }}>
+      {/* Back arrow */}
+      <div style={{ padding: "0 16px" }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M12 19l-7-7 7-7" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 48, padding: "0 16px", boxSizing: "border-box" }}>
+        {/* Headline */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
+          <h2 style={{ fontFamily: T.font.heading, fontWeight: 500, fontSize: 24, lineHeight: 1.4, color: T.color.primary, margin: 0 }}>
+            Edit your plan item
+          </h2>
+        </div>
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,video/*"
+          onChange={handleFileSelect}
+          style={{ display: "none" }}
+        />
+
+        {/* Upload area / Preview */}
+        {blockImage ? (
+          <div style={{
+            width: "100%", maxWidth: 343, display: "flex", flexDirection: "column", gap: 16, alignItems: "center",
+          }}>
+            <DraggableImagePreview
+              src={blockImage}
+              alt="Block preview"
+              position={blockImagePosition}
+              onPositionChange={setBlockImagePosition}
+              style={{ border: `2px solid ${T.color.green}` }}
+            />
+            <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+              <button onClick={() => fileInputRef.current?.click()} style={{
+                background: "none", border: "none", cursor: "pointer",
+                fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary,
+                textDecoration: "underline", padding: 0,
+              }}>
+                Change photo
+              </button>
+              <button onClick={removeImage} style={{
+                background: "none", border: "none", cursor: "pointer",
+                fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary,
+                textDecoration: "underline", padding: 0,
+              }}>
+                Remove
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div style={{
+            border: `2px solid ${T.color.neutral500}`, borderRadius: T.radius.input,
+            padding: 12, display: "flex", flexDirection: "column", gap: 24,
+            alignItems: "center", justifyContent: "center", width: "100%", maxWidth: 343,
+            boxSizing: "border-box", backgroundColor: T.color.white,
+          }}>
+            <GalleryIcon />
+            <p style={{ fontFamily: T.font.body, fontSize: 20, lineHeight: 1.6, color: T.color.primary, margin: 0 }}>
+              Upload photo
+            </p>
+            <ButtonPrimary text="Add media" onClick={() => fileInputRef.current?.click()} />
+          </div>
+        )}
+
+        {/* Title + Description inputs */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <InputField
+            label="Title"
+            value={blockTitle}
+            onChange={setBlockTitle}
+          />
+          <InputField
+            label="Description"
+            value={blockDescription}
+            onChange={setBlockDescription}
+            multiline
+            characterCount
+            maxChars={1000}
+          />
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 20, alignItems: "center", width: "100%", padding: "0 16px", boxSizing: "border-box" }}>
+        <ButtonPrimary text="Save changes" onClick={handleSave} disabled={!canSave} />
         <button onClick={onBack} style={{
           background: "none", border: "none", cursor: "pointer",
           fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
@@ -4558,6 +4716,7 @@ export default function SummaFundSetup() {
   const [slideDir, setSlideDir] = useState("right");
   const [animating, setAnimating] = useState(false);
   const [returnTo, setReturnTo] = useState(null); // screen index to return to after editing
+  const [editingBlockId, setEditingBlockId] = useState(null); // content block ID being edited
 
   // ---- SESSION PERSISTENCE ----
   // On app load, check if the user has an existing session (returning user)
@@ -4728,7 +4887,7 @@ export default function SummaFundSetup() {
     5: <SetupASummaFund4 data={data} setData={setData} onNext={next} onBack={back} />,
     6: <SetupASummaFund5AddCoverPhoto data={data} setData={setData} onNext={next} onBack={back} />,
     7: <SetupASummaFund6LinkPaymentMethods data={data} setData={setData} onNext={next} onBack={back} />,
-    8: <ReviewSummaFund data={data} setData={setData} onNext={next} onBack={back} goTo={(dest) => { setReturnTo(8); goTo(dest); }} />,
+    8: <ReviewSummaFund data={data} setData={setData} onNext={next} onBack={back} goTo={(dest) => { setReturnTo(8); goTo(dest); }} onEditBlock={(blockId) => { setEditingBlockId(blockId); setReturnTo(8); goTo(24); }} />,
     9: <ScreenComplete data={data} setData={setData} onNext={next} />,
     10: <FundPage data={data} goTo={goTo} goHome={goHome} isSignedIn={isSignedIn} />,
     11: <FundPageShare data={data} onBack={() => goTo(10, "left")} />,
@@ -4763,6 +4922,7 @@ export default function SummaFundSetup() {
       onBack={() => goTo(10, "left")}
     />,
     23: <AddToPage data={data} setData={setData} onBack={() => goTo(8, "left")} />,
+    24: <EditContentBlock data={data} setData={setData} blockId={editingBlockId} onBack={() => { setEditingBlockId(null); goTo(8, "left"); }} />,
   };
 
   if (showStart) {
