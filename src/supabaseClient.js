@@ -182,6 +182,57 @@ export async function loadFundsByCreator() {
 
 
 // ============================================================
+// API: Update an existing fund
+// Called from EditSummaFund to save changes
+// Returns { fund, error }
+// ============================================================
+export async function updateFund(fundId, updates) {
+  if (!supabase) return { fund: null, error: "Supabase not configured" };
+
+  const { data: fund, error } = await supabase
+    .from("funds")
+    .update({
+      title: updates.title,
+      description: updates.description || "",
+      goal: Number(updates.goal) || 0,
+      target_date: updates.targetDate || null,
+      payment_handles: updates.paymentHandles || {},
+      cover_photo_url: updates.coverImage || null,
+      cover_image_position: updates.coverImagePosition || { x: 50, y: 50 },
+      content_blocks: updates.contentBlocks || [],
+    })
+    .eq("id", fundId)
+    .select()
+    .single();
+
+  return { fund, error };
+}
+
+
+// ============================================================
+// API: Delete a fund
+// Called from EditSummaFund when user taps "Delete this fund"
+// Returns { error }
+// ============================================================
+export async function deleteFund(fundId) {
+  if (!supabase) return { error: "Supabase not configured" };
+
+  // Delete associated contributions first
+  await supabase
+    .from("contributions")
+    .delete()
+    .eq("fund_id", fundId);
+
+  const { error } = await supabase
+    .from("funds")
+    .delete()
+    .eq("id", fundId);
+
+  return { error };
+}
+
+
+// ============================================================
 // API: Record a contribution
 // Called when a supporter submits their name/message (screen 16)
 // Returns { contribution, error }

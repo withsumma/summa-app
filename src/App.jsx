@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-import { signUpUser, signInUser, getCurrentUser, signOutUser, createFund, loadFundBySlug, loadFundsByCreator, getContributions, updateContributionStatus, recordContribution } from "./supabaseClient";
+import { signUpUser, signInUser, getCurrentUser, signOutUser, createFund, updateFund, deleteFund, loadFundBySlug, loadFundsByCreator, getContributions, updateContributionStatus, recordContribution } from "./supabaseClient";
 
 // ============================================================
 // DESIGN TOKENS
@@ -3983,7 +3983,7 @@ function GuardianFundPage({ data, goTo, goHome }) {
           </button>
           {/* Edit pill */}
           <button
-            onClick={() => alert("This feature is coming soon! We're working on fund editing.")}
+            onClick={() => goTo(25)}
             style={{
               backgroundColor: T.color.white, border: "2px solid #d6ff76",
               borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
@@ -4163,6 +4163,215 @@ function GuardianFundPage({ data, goTo, goHome }) {
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// SCREEN: Edit Summa Fund (guardian edits an existing fund)
+// ============================================================
+function EditSummaFund({ data, setData, onBack, goTo, onEditBlock, onSave, onDelete }) {
+  const goalFormatted = data.goal
+    ? `$${Number(data.goal).toLocaleString()}`
+    : "$0";
+  const blocks = data.contentBlocks || [];
+  const hasBlocks = blocks.length > 0;
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleRemoveBlock = (blockId) => {
+    setData(d => ({ ...d, contentBlocks: (d.contentBlocks || []).filter(b => b.id !== blockId) }));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    await onSave();
+    setSaving(false);
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this fund? This action cannot be undone.")) return;
+    setDeleting(true);
+    await onDelete();
+    setDeleting(false);
+  };
+
+  // Plus icon for "Add to plan" button
+  const PlusIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 3v10M3 8h10" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+
+  // Trash icon for delete
+  const TrashIcon = ({ color = "#E53935", size = 14 }) => (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path d="M2 4h12M5.333 4V2.667a1.333 1.333 0 011.334-1.334h2.666a1.333 1.333 0 011.334 1.334V4m2 0v9.333a1.333 1.333 0 01-1.334 1.334H4.667a1.333 1.333 0 01-1.334-1.334V4h9.334z" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+
+  return (
+    <div style={{
+      backgroundColor: "transparent", display: "flex", flexDirection: "column",
+      width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
+      fontFamily: T.font.body, paddingTop: 48, boxSizing: "border-box",
+    }}>
+      {/* Header: back arrow + fund title */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "16px 16px 24px", boxSizing: "border-box",
+      }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }} aria-label="Go back">
+          <ArrowBackIcon />
+        </button>
+        <h1 style={{
+          fontFamily: T.font.heading, fontWeight: 700, fontSize: 22, lineHeight: 1.4,
+          color: T.color.primary, margin: 0, flex: 1, minWidth: 0,
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        }}>
+          {data.title || "My Summa Fund"}
+        </h1>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 48, padding: "0 16px", boxSizing: "border-box" }}>
+        {/* Overview card */}
+        <div style={{
+          backgroundColor: T.color.white, borderRadius: 24,
+          padding: "0 16px", width: "100%", boxSizing: "border-box",
+        }}>
+          {/* Cover / Overview */}
+          <ReviewSection label={hasBlocks ? "Overview" : "Cover"} onEdit={() => goTo(6)}>
+            <div style={{
+              width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
+              border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+              overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {data.coverImage ? (
+                <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
+              ) : (
+                <svg width="80" height="60" viewBox="0 0 80 60" fill="none">
+                  <rect width="80" height="60" fill={T.color.neutral300} />
+                  <polygon points="20,50 40,20 60,50" fill="white" opacity="0.6" />
+                  <polygon points="45,50 58,30 71,50" fill="white" opacity="0.4" />
+                </svg>
+              )}
+            </div>
+          </ReviewSection>
+
+          {/* Title */}
+          <ReviewSection label="Title" onEdit={() => goTo(3)}>
+            <p style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary, margin: 0 }}>
+              {data.title || "—"}
+            </p>
+          </ReviewSection>
+
+          {/* Goal */}
+          <ReviewSection label="Goal" onEdit={() => goTo(5)}>
+            <p style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary, margin: 0 }}>
+              {goalFormatted}
+            </p>
+          </ReviewSection>
+
+          {/* Description */}
+          <ReviewSection label="Description" onEdit={() => goTo(4)} noBorder>
+            <p style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary, margin: 0 }}>
+              {data.description || "—"}
+            </p>
+          </ReviewSection>
+        </div>
+
+        {/* Content block cards */}
+        {blocks.map((block) => (
+          <div key={block.id} style={{
+            backgroundColor: T.color.white, borderRadius: 24,
+            padding: "0 16px", width: "100%", boxSizing: "border-box",
+          }}>
+            {/* Remove button + Plan Item header + Edit */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "16px 0" }}>
+              <button
+                onClick={() => handleRemoveBlock(block.id)}
+                style={{
+                  background: "none", border: "none", cursor: "pointer", padding: 0,
+                  display: "flex", alignItems: "center", gap: 4,
+                }}
+                aria-label="Remove plan item"
+              >
+                <span style={{ fontFamily: T.font.body, fontWeight: 600, fontSize: 12, color: "#E53935" }}>Remove</span>
+                <TrashIcon />
+              </button>
+              <EditButton onClick={() => onEditBlock(block.id)} />
+            </div>
+            {/* Plan Item image */}
+            <div style={{ paddingBottom: 0 }}>
+              {block.image && (
+                <div style={{
+                  width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
+                  border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+                  overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(block.imagePosition || {x:50,y:50}).x}% ${(block.imagePosition || {x:50,y:50}).y}%` }} />
+                </div>
+              )}
+            </div>
+
+            {/* Block title + description */}
+            <div style={{
+              display: "flex", flexDirection: "column", gap: 8,
+              padding: "16px 0", width: "100%",
+              borderTop: `1px solid ${T.color.neutral300}`,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+                <span style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 16, lineHeight: 1.6, color: T.color.primary, flex: 1, minWidth: 0 }}>
+                  {block.title || "Untitled"}
+                </span>
+              </div>
+              {block.description && (
+                <p style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary, margin: 0 }}>
+                  {block.description}
+                </p>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* Add to plan button */}
+        <button
+          onClick={() => goTo(23)}
+          style={{
+            backgroundColor: T.color.white, border: `2px solid #d6ff76`,
+            borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
+            fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
+            color: T.color.primary, display: "flex", alignItems: "center", justifyContent: "center",
+            gap: 8, whiteSpace: "nowrap", alignSelf: "flex-start",
+          }}
+        >
+          Add to plan
+          <PlusIcon />
+        </button>
+
+        {/* Save Changes CTA */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 20, alignItems: "center", width: "100%", paddingBottom: 24 }}>
+          <ButtonPrimary text={saving ? "Saving..." : "Save Changes"} onClick={handleSave} disabled={saving} />
+        </div>
+
+        {/* Delete this fund */}
+        <div style={{ display: "flex", justifyContent: "center", paddingBottom: 60 }}>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            style={{
+              background: "none", border: "none", cursor: deleting ? "default" : "pointer",
+              padding: 0, display: "flex", alignItems: "center", gap: 6,
+              opacity: deleting ? 0.5 : 1,
+            }}
+          >
+            <span style={{ fontFamily: T.font.body, fontWeight: 600, fontSize: 14, color: "#E53935" }}>
+              {deleting ? "Deleting..." : "Delete this fund"}
+            </span>
+            <TrashIcon color="#E53935" size={16} />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -4921,8 +5130,36 @@ export default function SummaFundSetup() {
       }}
       onBack={() => goTo(10, "left")}
     />,
-    23: <AddToPage data={data} setData={setData} onBack={() => goTo(8, "left")} />,
-    24: <EditContentBlock data={data} setData={setData} blockId={editingBlockId} onBack={() => { setEditingBlockId(null); goTo(8, "left"); }} />,
+    23: <AddToPage data={data} setData={setData} onBack={() => goTo(returnTo || 8, "left")} />,
+    24: <EditContentBlock data={data} setData={setData} blockId={editingBlockId} onBack={() => { const ret = returnTo || 8; setEditingBlockId(null); goTo(ret, "left"); }} />,
+    25: <EditSummaFund
+      data={data} setData={setData}
+      onBack={() => goTo(20, "left")}
+      goTo={(dest) => { setReturnTo(25); goTo(dest); }}
+      onEditBlock={(blockId) => { setEditingBlockId(blockId); setReturnTo(25); goTo(24); }}
+      onSave={async () => {
+        if (data.fundId) {
+          const { error } = await updateFund(data.fundId, data);
+          if (error) { alert("Failed to save changes: " + (error.message || error)); return; }
+          alert("Changes saved!");
+          goTo(20, "left");
+        }
+      }}
+      onDelete={async () => {
+        if (data.fundId) {
+          const { error } = await deleteFund(data.fundId);
+          if (error) { alert("Failed to delete fund: " + (error.message || error)); return; }
+          // Reset data and go to dashboard
+          setData(prev => ({
+            fundFor: null, firstName: prev.firstName || "", lastName: prev.lastName || "",
+            recipientName: "", title: "", description: "", goal: "", targetDate: "",
+            paymentHandles: {}, coverImage: null, coverImagePosition: { x: 50, y: 50 },
+            contentBlocks: [], email: prev.email || "", userId: prev.userId || null,
+          }));
+          goTo(19);
+        }
+      }}
+    />,
   };
 
   if (showStart) {
