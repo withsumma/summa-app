@@ -370,6 +370,81 @@ function ButtonMega({ title, description, selected, onClick }) {
   );
 }
 
+// --- Rich Text Display (preserves paragraphs, bold, links) ---
+function RichText({ children, style = {} }) {
+  if (!children || typeof children !== "string") {
+    return <span style={style}>{children}</span>;
+  }
+  const text = children;
+
+  // Split into paragraphs on double-newline or single-newline
+  const paragraphs = text.split(/\n\n+/);
+
+  // Parse inline formatting within a paragraph string:
+  // - **bold** or __bold__
+  // - URLs become clickable links
+  const parseInline = (str, keyPrefix) => {
+    // Regex: match **bold**, __bold__, or URLs
+    const inlineRegex = /(\*\*(.+?)\*\*|__(.+?)__|(https?:\/\/[^\s,;)]+))/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+    let i = 0;
+
+    while ((match = inlineRegex.exec(str)) !== null) {
+      // Add text before this match
+      if (match.index > lastIndex) {
+        parts.push(str.slice(lastIndex, match.index));
+      }
+      if (match[2] || match[3]) {
+        // Bold text
+        parts.push(
+          <strong key={`${keyPrefix}-b${i}`}>{match[2] || match[3]}</strong>
+        );
+      } else if (match[4]) {
+        // URL link
+        parts.push(
+          <a
+            key={`${keyPrefix}-a${i}`}
+            href={match[4]}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#1a73e8", textDecoration: "underline", wordBreak: "break-all" }}
+          >
+            {match[4]}
+          </a>
+        );
+      }
+      lastIndex = match.index + match[0].length;
+      i++;
+    }
+    // Remaining text
+    if (lastIndex < str.length) {
+      parts.push(str.slice(lastIndex));
+    }
+    return parts.length > 0 ? parts : [str];
+  };
+
+  return (
+    <div style={{ ...style }}>
+      {paragraphs.map((para, pi) => {
+        // Handle single line breaks within a paragraph
+        const lines = para.split(/\n/);
+        return (
+          <p key={pi} style={{ margin: pi === 0 ? 0 : "12px 0 0 0" }}>
+            {lines.map((line, li) => (
+              <span key={li}>
+                {li > 0 && <br />}
+                {parseInline(line, `${pi}-${li}`)}
+              </span>
+            ))}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 // --- Draggable Image Preview (drag to reposition) ---
 function DraggableImagePreview({ src, position = { x: 50, y: 50 }, onPositionChange, alt = "Preview", style = {} }) {
   const containerRef = useRef(null);
@@ -1221,9 +1296,9 @@ function ReviewSummaFund({ data, setData, onNext, onBack, goTo, onEditBlock }) {
 
           {/* Description */}
           <ReviewSection label="Description" onEdit={() => goTo(4)} noBorder>
-            <p style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary, margin: 0 }}>
+            <RichText style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary }}>
               {data.description || "—"}
-            </p>
+            </RichText>
           </ReviewSection>
         </div>
 
@@ -1275,9 +1350,9 @@ function ReviewSummaFund({ data, setData, onNext, onBack, goTo, onEditBlock }) {
                 </span>
               </div>
               {block.description && (
-                <p style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary, margin: 0 }}>
+                <RichText style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary }}>
                   {block.description}
-                </p>
+                </RichText>
               )}
             </div>
           </div>
@@ -1885,12 +1960,12 @@ function FundPage({ data, goTo, goHome, isSignedIn }) {
           width: "100%", backgroundColor: "rgba(143,143,143,0.1)",
           borderRadius: 8, padding: 8, boxSizing: "border-box",
         }}>
-          <p style={{
+          <RichText style={{
             fontFamily: T.font.body, fontSize: 20, lineHeight: 1.6,
-            color: T.color.primary, margin: 0,
+            color: T.color.primary,
           }}>
             {data.description || "No description provided."}
-          </p>
+          </RichText>
         </div>
 
         {/* Content Blocks — "More info about this fund" */}
@@ -1933,12 +2008,12 @@ function FundPage({ data, goTo, goHome, isSignedIn }) {
                     </p>
                   )}
                   {block.description && (
-                    <p style={{
+                    <RichText style={{
                       fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
-                      color: T.color.primary, margin: 0,
+                      color: T.color.primary,
                     }}>
                       {block.description}
-                    </p>
+                    </RichText>
                   )}
                 </div>
               </div>
@@ -2499,12 +2574,12 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
           width: "100%", backgroundColor: "rgba(143,143,143,0.1)",
           borderRadius: 8, padding: 8, boxSizing: "border-box",
         }}>
-          <p style={{
+          <RichText style={{
             fontFamily: T.font.body, fontSize: 20, lineHeight: 1.6,
-            color: T.color.primary, margin: 0,
+            color: T.color.primary,
           }}>
             {data.description || "No description provided."}
-          </p>
+          </RichText>
         </div>
 
         {/* Content Blocks — "More info about this fund" */}
@@ -2549,12 +2624,12 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
                     </p>
                   )}
                   {block.description && (
-                    <p style={{
+                    <RichText style={{
                       fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
-                      color: T.color.primary, margin: 0,
+                      color: T.color.primary,
                     }}>
                       {block.description}
-                    </p>
+                    </RichText>
                   )}
                 </div>
               </div>
@@ -4103,12 +4178,12 @@ function GuardianFundPage({ data, goTo, goHome }) {
           width: "100%", backgroundColor: "rgba(143,143,143,0.1)",
           borderRadius: 8, padding: 8,
         }}>
-          <p style={{
+          <RichText style={{
             fontFamily: T.font.body, fontSize: 20, lineHeight: 1.6,
-            color: T.color.primary, margin: 0,
+            color: T.color.primary,
           }}>
             {data.description || "No description provided."}
-          </p>
+          </RichText>
         </div>
 
         {/* Content Blocks — "More info about this fund" */}
@@ -4151,12 +4226,12 @@ function GuardianFundPage({ data, goTo, goHome }) {
                     </p>
                   )}
                   {block.description && (
-                    <p style={{
+                    <RichText style={{
                       fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
-                      color: T.color.primary, margin: 0,
+                      color: T.color.primary,
                     }}>
                       {block.description}
-                    </p>
+                    </RichText>
                   )}
                 </div>
               </div>
@@ -4275,9 +4350,9 @@ function EditSummaFund({ data, setData, onBack, goTo, onEditBlock, onSave, onDel
 
           {/* Description */}
           <ReviewSection label="Description" onEdit={() => goTo(4)} noBorder>
-            <p style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary, margin: 0 }}>
+            <RichText style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary }}>
               {data.description || "—"}
-            </p>
+            </RichText>
           </ReviewSection>
         </div>
 
@@ -4327,9 +4402,9 @@ function EditSummaFund({ data, setData, onBack, goTo, onEditBlock, onSave, onDel
                 </span>
               </div>
               {block.description && (
-                <p style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary, margin: 0 }}>
+                <RichText style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary }}>
                   {block.description}
-                </p>
+                </RichText>
               )}
             </div>
           </div>
