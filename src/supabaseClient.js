@@ -189,7 +189,7 @@ export async function loadFundsByCreator() {
 export async function updateFund(fundId, updates) {
   if (!supabase) return { fund: null, error: "Supabase not configured" };
 
-  const { data: fund, error } = await supabase
+  const { data: funds, error } = await supabase
     .from("funds")
     .update({
       title: updates.title,
@@ -202,10 +202,9 @@ export async function updateFund(fundId, updates) {
       content_blocks: updates.contentBlocks || [],
     })
     .eq("id", fundId)
-    .select()
-    .single();
+    .select();
 
-  return { fund, error };
+  return { fund: funds?.[0] || null, error };
 }
 
 
