@@ -4914,6 +4914,7 @@ function SignUpScreen({ onCreateAccount, onBack }) {
 function SignInScreen({ onSignIn, onBack }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   const canSubmit = email.trim() && password.trim();
 
@@ -4949,12 +4950,41 @@ function SignInScreen({ onSignIn, onBack }) {
         {/* Form fields */}
         <InputField label="Email" value={email} onChange={setEmail} type="email" />
         <InputField label="Password" value={password} onChange={setPassword} type="password" />
+
+        {/* Remember me */}
+        <label style={{
+          display: "flex", alignItems: "center", gap: 10, cursor: "pointer",
+          width: "100%", maxWidth: 343,
+        }}>
+          <div
+            onClick={() => setRememberMe(v => !v)}
+            style={{
+              width: 20, height: 20, borderRadius: 4, flexShrink: 0,
+              border: `2px solid ${rememberMe ? T.color.primary : T.color.neutral500}`,
+              backgroundColor: rememberMe ? T.color.primary : "transparent",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.15s ease", cursor: "pointer",
+            }}
+          >
+            {rememberMe && (
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M2.5 6L5 8.5L9.5 3.5" stroke={T.color.white} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </div>
+          <span style={{
+            fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4,
+            color: T.color.primary,
+          }}>
+            Remember me
+          </span>
+        </label>
       </div>
 
       {/* Sign in button — pinned to bottom */}
       <div style={{ width: "100%", maxWidth: 343, margin: "0 auto" }}>
         <button
-          onClick={() => onSignIn({ email, password })}
+          onClick={() => onSignIn({ email, password, rememberMe })}
           disabled={!canSubmit}
           style={{
             width: "100%", height: 60, borderRadius: T.radius.circle,
