@@ -5215,8 +5215,19 @@ export default function SummaFundSetup() {
       onEditBlock={(blockId) => { setEditingBlockId(blockId); setReturnTo(25); goTo(24); }}
       onSave={async () => {
         if (data.fundId) {
-          const { error } = await updateFund(data.fundId, data);
+          const fundUpdates = {
+            title: data.title,
+            description: data.description,
+            goal: data.goal,
+            targetDate: data.targetDate,
+            paymentHandles: data.paymentHandles,
+            coverImage: data.coverImage,
+            coverImagePosition: data.coverImagePosition,
+            contentBlocks: data.contentBlocks,
+          };
+          const { fund, error } = await updateFund(data.fundId, fundUpdates);
           if (error) { alert("Failed to save changes: " + (error.message || error)); return; }
+          if (!fund) { alert("Changes could not be saved. Please add an UPDATE policy to your Supabase RLS for the funds table:\n\nCREATE POLICY \"Users can update own funds\" ON public.funds FOR UPDATE USING (auth.uid() = creator_id) WITH CHECK (auth.uid() = creator_id);"); return; }
           setFundsRefreshKey(k => k + 1);
           alert("Changes saved!");
           goTo(20, "left");

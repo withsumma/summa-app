@@ -189,20 +189,31 @@ export async function loadFundsByCreator() {
 export async function updateFund(fundId, updates) {
   if (!supabase) return { fund: null, error: "Supabase not configured" };
 
+  const payload = {
+    title: updates.title,
+    description: updates.description || "",
+    goal: Number(updates.goal) || 0,
+    target_date: updates.targetDate || null,
+    payment_handles: updates.paymentHandles || {},
+    cover_photo_url: updates.coverImage || null,
+    cover_image_position: updates.coverImagePosition || { x: 50, y: 50 },
+    content_blocks: updates.contentBlocks || [],
+  };
+
+  console.log("updateFund called:", { fundId, payload });
+
   const { data: funds, error } = await supabase
     .from("funds")
-    .update({
-      title: updates.title,
-      description: updates.description || "",
-      goal: Number(updates.goal) || 0,
-      target_date: updates.targetDate || null,
-      payment_handles: updates.paymentHandles || {},
-      cover_photo_url: updates.coverImage || null,
-      cover_image_position: updates.coverImagePosition || { x: 50, y: 50 },
-      content_blocks: updates.contentBlocks || [],
-    })
+    .update(payload)
     .eq("id", fundId)
     .select();
+
+  console.log("updateFund result:", { funds, error });
+
+  // If RLS silently blocked the update (no error but nothing returned)
+  if (!error && (!funds || funds.length === 0)) {
+    return { fund: null, error: "Update did not take effect. Please add an UPDATE policy to your Supabase RLS for the funds table: CREATE POLICY \"Users can update own funds\" ON public.funds FOR UPDATE USING (auth.uid() = creator_id) WITH CHECK (auth.uid() = creator_id);" };
+  }
 
   return { fund: funds?.[0] || null, error };
 }
