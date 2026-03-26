@@ -2572,7 +2572,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
         {/* Description */}
         <div style={{
           width: "100%", backgroundColor: "rgba(143,143,143,0.1)",
-          borderRadius: 8, padding: 8, boxSizing: "border-box",
+          borderRadius: 8, padding: 16, boxSizing: "border-box",
         }}>
           <RichText style={{
             fontFamily: T.font.body, fontSize: 20, lineHeight: 1.6,
@@ -2585,7 +2585,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
         {/* Content Blocks — "More info about this fund" */}
         {(data.contentBlocks || []).length > 0 && (
           <div style={{
-            display: "flex", flexDirection: "column", gap: 24, width: "100%",
+            display: "flex", flexDirection: "column", gap: 32, width: "100%",
             padding: "24px 0",
           }}>
             <h2 style={{
@@ -2603,7 +2603,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
                 {block.image && (
                   <div style={{
                     width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
-                    border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+                    border: `1px solid ${T.color.neutral500}`, borderRadius: "16px 16px 0 0",
                     overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
                     <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(block.imagePosition || {x:50,y:50}).x}% ${(block.imagePosition || {x:50,y:50}).y}%` }} />
@@ -2611,7 +2611,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
                 )}
                 {/* Block info */}
                 <div style={{
-                  backgroundColor: "rgba(143,143,143,0.1)", padding: 8,
+                  backgroundColor: "rgba(143,143,143,0.1)", padding: 16,
                   display: "flex", flexDirection: "column", gap: 10,
                   boxSizing: "border-box",
                 }}>
