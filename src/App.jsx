@@ -1920,17 +1920,17 @@ function FundPage({ data, goTo, goHome, isSignedIn }) {
 
         {/* Cover Image */}
         <div style={{
-          width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
+          width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
           border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
           overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           {data.coverImage ? (
             <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
           ) : (
-            <svg width="100%" height="100%" viewBox="0 0 316 178" preserveAspectRatio="xMidYMid slice">
-              <rect width="316" height="178" fill={T.color.neutral300} />
-              <polygon points="60,160 130,50 200,160" fill="white" opacity="0.6" />
-              <polygon points="170,160 220,80 270,160" fill="white" opacity="0.4" />
+            <svg width="100%" height="100%" viewBox="0 0 375 500" preserveAspectRatio="xMidYMid slice">
+              <rect width="375" height="500" fill={T.color.neutral300} />
+              <polygon points="75,420 160,180 250,420" fill="white" opacity="0.6" />
+              <polygon points="200,420 265,250 330,420" fill="white" opacity="0.4" />
             </svg>
           )}
         </div>
@@ -1957,11 +1957,11 @@ function FundPage({ data, goTo, goHome, isSignedIn }) {
 
         {/* Description */}
         <div style={{
-          width: "100%", backgroundColor: "rgba(143,143,143,0.1)",
-          borderRadius: 8, padding: 8, boxSizing: "border-box",
+          width: "100%", backgroundColor: "rgba(255,255,255,0.6)",
+          borderRadius: 8, padding: 16, boxSizing: "border-box",
         }}>
           <RichText style={{
-            fontFamily: T.font.body, fontSize: 20, lineHeight: 1.6,
+            fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
             color: T.color.primary,
           }}>
             {data.description || "No description provided."}
@@ -1988,14 +1988,14 @@ function FundPage({ data, goTo, goHome, isSignedIn }) {
                 {block.image && (
                   <div style={{
                     width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
-                    border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+                    border: `1px solid ${T.color.neutral500}`, borderRadius: "16px 16px 0 0",
                     overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
                     <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(block.imagePosition || {x:50,y:50}).x}% ${(block.imagePosition || {x:50,y:50}).y}%` }} />
                   </div>
                 )}
                 <div style={{
-                  backgroundColor: "rgba(143,143,143,0.1)", padding: 8,
+                  backgroundColor: "rgba(255,255,255,0.6)", padding: 16,
                   display: "flex", flexDirection: "column", gap: 10,
                   boxSizing: "border-box",
                 }}>
@@ -2509,17 +2509,17 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
 
         {/* Cover Image */}
         <div style={{
-          width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
+          width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
           border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
           overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           {data.coverImage ? (
             <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
           ) : (
-            <svg width="100%" height="100%" viewBox="0 0 316 178" preserveAspectRatio="xMidYMid slice">
-              <rect width="316" height="178" fill={T.color.neutral300} />
-              <polygon points="60,160 130,50 200,160" fill="white" opacity="0.6" />
-              <polygon points="170,160 220,80 270,160" fill="white" opacity="0.4" />
+            <svg width="100%" height="100%" viewBox="0 0 375 500" preserveAspectRatio="xMidYMid slice">
+              <rect width="375" height="500" fill={T.color.neutral300} />
+              <polygon points="75,420 160,180 250,420" fill="white" opacity="0.6" />
+              <polygon points="200,420 265,250 330,420" fill="white" opacity="0.4" />
             </svg>
           )}
         </div>
@@ -2571,11 +2571,11 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
 
         {/* Description */}
         <div style={{
-          width: "100%", backgroundColor: "rgba(143,143,143,0.1)",
+          width: "100%", backgroundColor: "rgba(255,255,255,0.6)",
           borderRadius: 8, padding: 16, boxSizing: "border-box",
         }}>
           <RichText style={{
-            fontFamily: T.font.body, fontSize: 20, lineHeight: 1.6,
+            fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
             color: T.color.primary,
           }}>
             {data.description || "No description provided."}
@@ -2611,7 +2611,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
                 )}
                 {/* Block info */}
                 <div style={{
-                  backgroundColor: "rgba(143,143,143,0.1)", padding: 16,
+                  backgroundColor: "rgba(255,255,255,0.6)", padding: 16,
                   display: "flex", flexDirection: "column", gap: 10,
                   boxSizing: "border-box",
                 }}>
@@ -4121,17 +4121,17 @@ function GuardianFundPage({ data, goTo, goHome }) {
 
         {/* Cover Image */}
         <div style={{
-          width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
+          width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
           border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
           overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           {data.coverImage ? (
             <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
           ) : (
-            <svg width="100%" height="100%" viewBox="0 0 316 178" preserveAspectRatio="xMidYMid slice">
-              <rect width="316" height="178" fill={T.color.neutral300} />
-              <polygon points="60,160 130,50 200,160" fill="white" opacity="0.6" />
-              <polygon points="170,160 220,80 270,160" fill="white" opacity="0.4" />
+            <svg width="100%" height="100%" viewBox="0 0 375 500" preserveAspectRatio="xMidYMid slice">
+              <rect width="375" height="500" fill={T.color.neutral300} />
+              <polygon points="75,420 160,180 250,420" fill="white" opacity="0.6" />
+              <polygon points="200,420 265,250 330,420" fill="white" opacity="0.4" />
             </svg>
           )}
         </div>
@@ -4175,11 +4175,11 @@ function GuardianFundPage({ data, goTo, goHome }) {
 
         {/* Description */}
         <div style={{
-          width: "100%", backgroundColor: "rgba(143,143,143,0.1)",
-          borderRadius: 8, padding: 8,
+          width: "100%", backgroundColor: "rgba(255,255,255,0.6)",
+          borderRadius: 8, padding: 16, boxSizing: "border-box",
         }}>
           <RichText style={{
-            fontFamily: T.font.body, fontSize: 20, lineHeight: 1.6,
+            fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
             color: T.color.primary,
           }}>
             {data.description || "No description provided."}
@@ -4206,14 +4206,14 @@ function GuardianFundPage({ data, goTo, goHome }) {
                 {block.image && (
                   <div style={{
                     width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
-                    border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+                    border: `1px solid ${T.color.neutral500}`, borderRadius: "16px 16px 0 0",
                     overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
                     <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(block.imagePosition || {x:50,y:50}).x}% ${(block.imagePosition || {x:50,y:50}).y}%` }} />
                   </div>
                 )}
                 <div style={{
-                  backgroundColor: "rgba(143,143,143,0.1)", padding: 8,
+                  backgroundColor: "rgba(255,255,255,0.6)", padding: 16,
                   display: "flex", flexDirection: "column", gap: 10,
                   boxSizing: "border-box",
                 }}>
