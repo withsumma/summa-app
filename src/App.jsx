@@ -500,7 +500,7 @@ function DraggableImagePreview({ src, position = { x: 50, y: 50 }, onPositionCha
       onTouchMove={(e) => { e.preventDefault(); handleMove(e.touches[0].clientX, e.touches[0].clientY); }}
       onTouchEnd={handleEnd}
       style={{
-        width: "100%", aspectRatio: "316/178", borderRadius: T.radius.card,
+        width: "100%", aspectRatio: "3/4", borderRadius: T.radius.card,
         overflow: "hidden", boxSizing: "border-box",
         cursor: isDragging ? "grabbing" : "grab",
         position: "relative", touchAction: "none",
@@ -1264,7 +1264,7 @@ function ReviewSummaFund({ data, setData, onNext, onBack, goTo, onEditBlock }) {
           {/* Cover / Overview */}
           <ReviewSection label={hasBlocks ? "Overview" : "Cover"} onEdit={() => goTo(6)}>
             <div style={{
-              width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
+              width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
               border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
               overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
             }}>
@@ -1469,7 +1469,7 @@ function AddToPage({ data, setData, onBack }) {
               alt="Block preview"
               position={blockImagePosition}
               onPositionChange={setBlockImagePosition}
-              style={{ border: `2px solid ${T.color.green}` }}
+              style={{ border: `2px solid ${T.color.green}`, aspectRatio: "316/178" }}
             />
             <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
               <button onClick={() => fileInputRef.current?.click()} style={{
@@ -1627,7 +1627,7 @@ function EditContentBlock({ data, setData, blockId, onBack }) {
               alt="Block preview"
               position={blockImagePosition}
               onPositionChange={setBlockImagePosition}
-              style={{ border: `2px solid ${T.color.green}` }}
+              style={{ border: `2px solid ${T.color.green}`, aspectRatio: "316/178" }}
             />
             <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
               <button onClick={() => fileInputRef.current?.click()} style={{
@@ -4318,7 +4318,7 @@ function EditSummaFund({ data, setData, onBack, goTo, onEditBlock, onSave, onDel
           {/* Cover / Overview */}
           <ReviewSection label={hasBlocks ? "Overview" : "Cover"} onEdit={() => goTo(6)}>
             <div style={{
-              width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
+              width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
               border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
               overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
             }}>
