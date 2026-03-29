@@ -2685,7 +2685,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
                       </span>
                     </div>
                     {/* Donation details */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0, paddingTop: (36 - 14 * 1.4) / 2 }}>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
                         <span style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 14, lineHeight: 1.4, color: T.color.primary }}>
                           {donation.name} donated ${donation.amount.toLocaleString()}
