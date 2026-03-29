@@ -2678,6 +2678,70 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
           </div>
         </div>
       </div>
+
+      {/* Latest Activity Feed */}
+      <div style={{ padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 20, width: "100%" }}>
+          <h3 style={{
+            fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
+            color: T.color.primary, margin: 0, textAlign: "center",
+          }}>
+            Latest activity
+          </h3>
+          {(data.donations || []).length === 0 ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span style={{ fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: T.color.primary }}>
+                Be the first to support!
+              </span>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {(data.donations || []).map((donation) => {
+                const initial = (donation.name || "A").charAt(0).toUpperCase();
+                return (
+                  <div key={donation.id} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    {/* Avatar with gradient bg */}
+                    <div style={{
+                      width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+                      background: "linear-gradient(135deg, #d6ff76, #eafe7e)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <span style={{
+                        fontFamily: T.font.body, fontWeight: 700, fontSize: 14,
+                        color: T.color.primary, lineHeight: 1,
+                      }}>
+                        {initial}
+                      </span>
+                    </div>
+                    {/* Donation details */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
+                        <span style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 14, lineHeight: 1.4, color: T.color.primary }}>
+                          {donation.name} donated ${donation.amount.toLocaleString()}
+                        </span>
+                        <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.neutral700 }}>
+                          {donation.time}
+                        </span>
+                      </div>
+                      {donation.message && (
+                        <p style={{
+                          fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4,
+                          color: T.color.primary, margin: 0, opacity: 0.8,
+                        }}>
+                          {donation.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -5059,9 +5123,20 @@ export default function SummaFundSetup() {
     if (match) {
       const slug = match[1];
       setLoading(true);
-      loadFundBySlug(slug).then(({ fund, error }) => {
-        setLoading(false);
+      loadFundBySlug(slug).then(async ({ fund, error }) => {
         if (fund) {
+          // Fetch contributions for this fund to show activity feed
+          const { contributions } = await getContributions(fund.id);
+          const confirmedDonations = (contributions || [])
+            .filter(c => c.status === "confirmed")
+            .map(c => ({
+              id: c.id,
+              name: c.supporter_name || "Anonymous",
+              amount: Number(c.amount) || 0,
+              message: c.message || "",
+              time: new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+            }));
+          const totalRaised = confirmedDonations.reduce((s, d) => s + d.amount, 0);
           // Hydrate app state with the fund data from Supabase
           setData({
             fundId: fund.id,
@@ -5076,14 +5151,18 @@ export default function SummaFundSetup() {
             targetDate: fund.target_date || "",
             paymentHandles: fund.payment_handles || {},
             coverImage: fund.cover_photo_url || null,
+            coverImagePosition: fund.cover_image_position || { x: 50, y: 50 },
             contentBlocks: fund.content_blocks || [],
-            supporterContribution: Number(fund.raised_amount) || 0,
-            supporterCount: fund.supporter_count || 0,
+            supporterContribution: totalRaised,
+            supporterCount: confirmedDonations.length,
+            donations: confirmedDonations,
           });
+          setLoading(false);
           // Skip start screen, go directly to supporter fund page
           setShowStart(false);
           setScreen(12);
         } else {
+          setLoading(false);
           console.warn("Fund not found:", slug, error);
           // Fund not found — show start screen as fallback
         }
