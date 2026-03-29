@@ -2309,6 +2309,12 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
     ? `${data.firstName}${data.lastName ? ` ${data.lastName}` : ""}`
     : "the organizer";
 
+  // Derive the recipient's first name for the CTA button
+  const recipientFirstName = data.fundFor === "someone" && data.recipientName
+    ? data.recipientName.split(/\s+/)[0]
+    : data.firstName || null;
+  const ctaText = recipientFirstName ? `Support ${recipientFirstName}` : "Support this fund";
+
   const supporterCount = data.supporterCount || 0;
   const [showShareModal, setShowShareModal] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -2569,6 +2575,9 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
           )}
         </div>
 
+        {/* Support CTA Button — right after progress tracker */}
+        <ButtonPrimary text={ctaText} onClick={() => goTo(13)} />
+
         {/* Description */}
         <div style={{
           width: "100%", backgroundColor: "rgba(255,255,255,0.6)",
@@ -2638,47 +2647,6 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
         )}
       </div>
 
-      {/* Support CTA Button */}
-      <div style={{
-        padding: "0 16px", width: "100%", boxSizing: "border-box",
-      }}>
-        <ButtonPrimary text="Support this fund" onClick={() => goTo(13)} />
-      </div>
-
-      {/* Organizer Section */}
-      <div style={{ padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
-        <div style={{
-          backgroundColor: T.color.neutral300, borderRadius: 8, padding: 16,
-          display: "flex", flexDirection: "column", gap: 8, width: "100%", boxSizing: "border-box",
-        }}>
-          <span style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 16, lineHeight: 1.6, color: T.color.primary }}>
-            Organizer
-          </span>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: T.radius.circle,
-                backgroundColor: T.color.neutral500, display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <div style={{
-                  width: 8, height: 8, borderRadius: T.radius.circle, backgroundColor: T.color.green,
-                }} />
-              </div>
-              <span style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary }}>
-                {organizer}
-              </span>
-            </div>
-            <button onClick={() => alert("This feature is coming soon! We're working on making it easy to message the organizer directly.")} style={{
-              backgroundColor: T.color.neutral300, border: `2px solid ${T.color.primary}`,
-              borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
-              fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary,
-            }}>
-              Contact
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Latest Activity Feed */}
       <div style={{ padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 20, width: "100%" }}>
@@ -2740,6 +2708,40 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
               })}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Organizer Section */}
+      <div style={{ padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
+        <div style={{
+          backgroundColor: T.color.neutral300, borderRadius: 8, padding: 16,
+          display: "flex", flexDirection: "column", gap: 8, width: "100%", boxSizing: "border-box",
+        }}>
+          <span style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 16, lineHeight: 1.6, color: T.color.primary }}>
+            Organizer
+          </span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: T.radius.circle,
+                backgroundColor: T.color.neutral500, display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <div style={{
+                  width: 8, height: 8, borderRadius: T.radius.circle, backgroundColor: T.color.green,
+                }} />
+              </div>
+              <span style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary }}>
+                {organizer}
+              </span>
+            </div>
+            <button onClick={() => alert("This feature is coming soon! We're working on making it easy to message the organizer directly.")} style={{
+              backgroundColor: T.color.neutral300, border: `2px solid ${T.color.primary}`,
+              borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary,
+            }}>
+              Contact
+            </button>
+          </div>
         </div>
       </div>
     </div>
