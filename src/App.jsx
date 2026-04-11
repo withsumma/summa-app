@@ -2509,46 +2509,68 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
         </div>
       )}
 
-      {/* Header — Logo left, Share pill right */}
+      {/* Header — Logo left, nav right */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         width: "100%", padding: isDesktop ? "16px 48px" : "16px 16px", boxSizing: "border-box",
-        borderBottom: `1px solid ${T.color.neutral500}`,
+        height: isDesktop ? 64 : "auto",
       }}>
         <button onClick={goHome} style={{
           background: "none", border: "none", cursor: "pointer", padding: 0,
-          fontFamily: T.font.heading, fontWeight: 700, fontSize: 18, color: T.color.primary,
+          fontFamily: T.font.heading, fontWeight: 700, fontSize: isDesktop ? 24 : 18, color: T.color.primary,
           letterSpacing: 1,
         }}>
           summa
         </button>
-        <button onClick={handleShare} style={{
-          backgroundColor: T.color.white, border: `2px solid #d6ff76`,
-          borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
-          fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
-          color: T.color.primary, display: "flex", alignItems: "center", justifyContent: "center",
-          gap: 8, whiteSpace: "nowrap",
-        }}>
-          Share
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: isDesktop ? 24 : 12 }}>
+          {isDesktop && !isSignedIn && (
+            <button onClick={() => goTo(22)} style={{
+              background: "none", border: "none", cursor: "pointer", padding: 0,
+              fontFamily: T.font.body, fontSize: 14, fontWeight: 500, color: T.color.primary,
+            }}>
+              Sign in
+            </button>
+          )}
+          {isDesktop ? (
+            <button onClick={isSignedIn ? () => goTo(0) : () => goTo(22)} style={{
+              backgroundColor: "#e7fd57", border: "none", borderRadius: T.radius.circle,
+              padding: "10px 20px", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: 14, fontWeight: 600, color: T.color.primary,
+              whiteSpace: "nowrap",
+            }}>
+              Start a Summa fund
+            </button>
+          ) : (
+            <button onClick={handleShare} style={{
+              backgroundColor: T.color.white, border: `2px solid #d6ff76`,
+              borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
+              color: T.color.primary, display: "flex", alignItems: "center", justifyContent: "center",
+              gap: 8, whiteSpace: "nowrap",
+            }}>
+              Share
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Two-column wrapper (desktop) / single column (mobile) */}
       <div style={{
         display: "flex", flexDirection: isDesktop ? "row" : "column",
-        gap: isDesktop ? 48 : 24, alignItems: isDesktop ? "flex-start" : "center",
-        width: "100%", padding: isDesktop ? "24px 48px 0" : "0", boxSizing: "border-box",
+        gap: isDesktop ? 48 : 24, alignItems: isDesktop ? "stretch" : "center",
+        width: "100%", padding: isDesktop ? "24px 48px 48px" : "0", boxSizing: "border-box",
       }}>
 
-      {/* LEFT COLUMN (Cover Image) - Desktop: sticky sidebar */}
+      {/* LEFT COLUMN (Cover Image) - Desktop: fills viewport height */}
       {isDesktop && (
         <div style={{
-          flex: 1, position: "sticky", top: 80, maxHeight: "calc(100vh - 128px)",
-          display: "flex", flexDirection: "column", gap: 0,
+          flex: 1, position: "sticky", top: 80, alignSelf: "flex-start",
+          height: "calc(100vh - 128px)",
+          display: "flex", flexDirection: "column",
         }}>
           <div style={{
-            width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
-            border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+            width: "100%", height: "100%", backgroundColor: T.color.white,
+            borderRadius: 16,
             overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             {data.coverImage ? (
@@ -2566,19 +2588,22 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
 
       {/* RIGHT COLUMN (Content) */}
       <div style={{
-        flex: isDesktop ? 1 : undefined, maxWidth: isDesktop ? 520 : undefined,
+        flex: isDesktop ? "0 0 480px" : undefined,
         display: "flex", flexDirection: "column", gap: 24, alignItems: isDesktop ? "flex-start" : "center",
-        padding: isDesktop ? 0 : "0 16px", width: isDesktop ? "100%" : "100%", boxSizing: "border-box",
+        padding: isDesktop ? 0 : "0 16px", width: "100%", boxSizing: "border-box",
       }}>
         {/* Title */}
         <div style={{ width: "100%", textAlign: "left" }}>
           <h1 style={{
-            fontFamily: T.font.heading, fontWeight: 500, fontSize: 28, lineHeight: 1.4,
+            fontFamily: T.font.heading, fontWeight: 700, fontSize: isDesktop ? 32 : 28, lineHeight: 1.4,
             color: T.color.primary, margin: 0,
           }}>
             {displayName}
           </h1>
         </div>
+
+        {/* Support CTA Button — right after title on desktop (matching Figma) */}
+        <ButtonPrimary text={ctaText} onClick={() => goTo(13)} />
 
         {/* Cover Image (Mobile only) */}
         {!isDesktop && (
@@ -2599,19 +2624,29 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
           </div>
         )}
 
-        {/* Progress Bar — two layers: confirmed (solid green) + pending (faded green) */}
+        {/* Progress Section — matching Figma layout */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+          {/* Amount row */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+            <span style={{ fontFamily: T.font.body, fontSize: 20, fontWeight: 700, lineHeight: 1.4, color: T.color.primary }}>
+              {raisedFormatted} raised
+            </span>
+            <span style={{ fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: T.color.neutral700 }}>
+              {goalFormatted} goal
+            </span>
+          </div>
+          {/* Progress bar */}
           <div style={{
-            width: "100%", height: 8, backgroundColor: "rgba(143,143,143,0.2)",
-            borderRadius: 8, overflow: "hidden", position: "relative",
+            width: "100%", height: 8, backgroundColor: "#e8e8e8",
+            borderRadius: 4, overflow: "hidden", position: "relative",
           }}>
             {/* Pending layer (lighter) */}
             {totalPct > confirmedPct && (
               <div style={{
                 position: "absolute", left: 0, top: 0,
                 width: `${Math.max(totalPct, 0.3)}%`, height: "100%",
-                background: `linear-gradient(90deg, ${T.color.green}, #d6ff76)`,
-                borderRadius: 8, opacity: 0.35,
+                backgroundColor: "#e7fd57",
+                borderRadius: 4, opacity: 0.35,
                 transition: "width 0.6s ease",
               }} />
             )}
@@ -2619,41 +2654,23 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
             <div style={{
               position: "absolute", left: 0, top: 0,
               width: `${Math.max(confirmedPct, confirmed > 0 ? 0.3 : 0)}%`, height: "100%",
-              background: `linear-gradient(90deg, ${T.color.green}, #d6ff76)`,
-              borderRadius: 8, transition: "width 0.6s ease",
+              backgroundColor: "#e7fd57",
+              borderRadius: 4, transition: "width 0.6s ease",
             }} />
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary }}>RAISED</span>
-              <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary, fontWeight: 700 }}>{raisedFormatted}</span>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-              <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary }}>GOAL</span>
-              <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary, fontWeight: 700 }}>{goalFormatted}</span>
-            </div>
-          </div>
           {/* Supporter count */}
-          {supporterCount > 0 && (
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <HeartFilledIcon />
-              <span style={{ fontFamily: T.font.body, fontSize: 14, color: T.color.primary }}>
-                {supporterCount} {supporterCount === 1 ? "supporter" : "supporters"}
-              </span>
-            </div>
-          )}
+          <span style={{ fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: T.color.neutral700 }}>
+            {supporterCount} {supporterCount === 1 ? "supporter" : "supporters"}
+          </span>
         </div>
-
-        {/* Support CTA Button — right after progress tracker */}
-        <ButtonPrimary text={ctaText} onClick={() => goTo(13)} />
 
         {/* Description */}
         <div style={{
           width: "100%", backgroundColor: "rgba(255,255,255,0.6)",
-          borderRadius: 8, padding: 16, boxSizing: "border-box",
+          borderRadius: 16, padding: 20, boxSizing: "border-box",
         }}>
           <RichText style={{
-            fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
+            fontFamily: T.font.body, fontSize: 16, lineHeight: 1.5,
             color: T.color.primary,
           }}>
             {data.description || "No description provided."}
@@ -2714,14 +2731,12 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
             ))}
           </div>
         )}
-      </div>
 
-      {/* Latest Activity Feed */}
-      <div style={{ padding: isDesktop ? "0" : "0 16px", width: "100%", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 20, width: "100%" }}>
+        {/* Latest Activity Feed */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
           <h3 style={{
             fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
-            color: T.color.primary, margin: 0, textAlign: "center",
+            color: T.color.primary, margin: 0, textAlign: "left",
           }}>
             Latest activity
           </h3>
@@ -2778,42 +2793,35 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Organizer Section */}
-      <div style={{ padding: isDesktop ? "0" : "0 16px", width: "100%", boxSizing: "border-box" }}>
+        {/* Organizer Section — matching Figma inline style */}
         <div style={{
-          backgroundColor: T.color.neutral300, borderRadius: 8, padding: 16,
-          display: "flex", flexDirection: "column", gap: 8, width: "100%", boxSizing: "border-box",
+          display: "flex", gap: 12, alignItems: "center",
+          paddingTop: 8, width: "100%",
         }}>
-          <span style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 16, lineHeight: 1.6, color: T.color.primary }}>
-            Organizer
-          </span>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: T.radius.circle,
-                backgroundColor: T.color.neutral500, display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <div style={{
-                  width: 8, height: 8, borderRadius: T.radius.circle, backgroundColor: T.color.green,
-                }} />
-              </div>
-              <span style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary }}>
-                {organizer}
-              </span>
-            </div>
-            <button onClick={() => alert("This feature is coming soon! We're working on making it easy to message the organizer directly.")} style={{
-              backgroundColor: T.color.neutral300, border: `2px solid ${T.color.primary}`,
-              borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
-              fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.primary,
+          {/* Organizer Avatar */}
+          <div style={{
+            width: 40, height: 40, borderRadius: 20, flexShrink: 0,
+            backgroundColor: T.color.neutral300, display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <span style={{
+              fontFamily: T.font.body, fontWeight: 700, fontSize: 16,
+              color: T.color.primary, lineHeight: 1,
             }}>
-              Contact
-            </button>
+              {(organizer || "O").charAt(0).toUpperCase()}
+            </span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.neutral700 }}>
+              Organized by
+            </span>
+            <span style={{ fontFamily: T.font.body, fontWeight: 600, fontSize: 14, lineHeight: 1.4, color: T.color.primary }}>
+              {organizer}
+            </span>
           </div>
         </div>
-      </div>
-      {/* END RIGHT COLUMN */}
+
+      </div>{/* END RIGHT COLUMN */}
       </div>{/* END Two-column wrapper */}
     </div>
   );
