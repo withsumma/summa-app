@@ -80,8 +80,19 @@ const GiveIcon = () => (
 );
 
 // ============================================================
-// SHARED COMPONENTS
+// SHARED COMPONENTS & HOOKS
 // ============================================================
+
+// --- useIsDesktop Hook ---
+function useIsDesktop(breakpoint = 768) {
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= breakpoint);
+  useEffect(() => {
+    const handler = () => setIsDesktop(window.innerWidth >= breakpoint);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, [breakpoint]);
+  return isDesktop;
+}
 
 // --- Swipe Button ---
 function SwipeButton({ text = "Swipe to give", onSwipeComplete, disabled = false }) {
@@ -543,11 +554,12 @@ function DraggableImagePreview({ src, position = { x: 50, y: 50 }, onPositionCha
 
 // --- Screen Layout Wrapper ---
 function ScreenLayout({ children, onBack, activeStep, bottomContent, gap = 32 }) {
+  const isDesktop = useIsDesktop();
   return (
     <div style={{
       backgroundColor: "transparent", display: "flex", flexDirection: "column", gap,
-      width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
-      fontFamily: T.font.body, paddingTop: 80, paddingBottom: 60, boxSizing: "border-box",
+      width: "100%", maxWidth: isDesktop ? 520 : 375, minHeight: "100vh", margin: "0 auto",
+      fontFamily: T.font.body, paddingTop: isDesktop ? 60 : 80, paddingBottom: 60, paddingLeft: isDesktop ? 48 : 0, paddingRight: isDesktop ? 48 : 0, boxSizing: "border-box",
     }}>
       {/* Back Arrow */}
       <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", padding: "0 16px", alignSelf: "flex-start" }} aria-label="Go back">
@@ -2389,11 +2401,13 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
     setShowShareModal(false);
   };
 
+  const isDesktop = useIsDesktop();
+
   return (
     <div style={{
       backgroundColor: "transparent", display: "flex", flexDirection: "column",
-      gap: 24, alignItems: "center", paddingTop: 0, paddingBottom: 48,
-      width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
+      gap: 0, alignItems: "center", paddingTop: 0, paddingBottom: 48,
+      width: "100%", maxWidth: isDesktop ? 1200 : 375, minHeight: isDesktop ? "auto" : "100vh", margin: "0 auto",
       fontFamily: T.font.body, boxSizing: "border-box",
     }}>
       {/* Share Modal Overlay */}
@@ -2498,7 +2512,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
       {/* Header — Logo left, Share pill right */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        width: "100%", padding: "16px 16px", boxSizing: "border-box",
+        width: "100%", padding: isDesktop ? "16px 48px" : "16px 16px", boxSizing: "border-box",
         borderBottom: `1px solid ${T.color.neutral500}`,
       }}>
         <button onClick={goHome} style={{
@@ -2519,10 +2533,42 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
         </button>
       </div>
 
-      {/* Fund Details Section */}
+      {/* Two-column wrapper (desktop) / single column (mobile) */}
       <div style={{
-        display: "flex", flexDirection: "column", gap: 24, alignItems: "center",
-        padding: "0 16px", width: "100%", boxSizing: "border-box",
+        display: "flex", flexDirection: isDesktop ? "row" : "column",
+        gap: isDesktop ? 48 : 24, alignItems: isDesktop ? "flex-start" : "center",
+        width: "100%", padding: isDesktop ? "24px 48px 0" : "0", boxSizing: "border-box",
+      }}>
+
+      {/* LEFT COLUMN (Cover Image) - Desktop: sticky sidebar */}
+      {isDesktop && (
+        <div style={{
+          flex: 1, position: "sticky", top: 80, maxHeight: "calc(100vh - 128px)",
+          display: "flex", flexDirection: "column", gap: 0,
+        }}>
+          <div style={{
+            width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
+            border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+            overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {data.coverImage ? (
+              <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
+            ) : (
+              <svg width="100%" height="100%" viewBox="0 0 375 500" preserveAspectRatio="xMidYMid slice">
+                <rect width="375" height="500" fill={T.color.neutral300} />
+                <polygon points="75,420 160,180 250,420" fill="white" opacity="0.6" />
+                <polygon points="200,420 265,250 330,420" fill="white" opacity="0.4" />
+              </svg>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* RIGHT COLUMN (Content) */}
+      <div style={{
+        flex: isDesktop ? 1 : undefined, maxWidth: isDesktop ? 520 : undefined,
+        display: "flex", flexDirection: "column", gap: 24, alignItems: isDesktop ? "flex-start" : "center",
+        padding: isDesktop ? 0 : "0 16px", width: isDesktop ? "100%" : "100%", boxSizing: "border-box",
       }}>
         {/* Title */}
         <div style={{ width: "100%", textAlign: "left" }}>
@@ -2534,22 +2580,24 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
           </h1>
         </div>
 
-        {/* Cover Image */}
-        <div style={{
-          width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
-          border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
-          overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          {data.coverImage ? (
-            <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
-          ) : (
-            <svg width="100%" height="100%" viewBox="0 0 375 500" preserveAspectRatio="xMidYMid slice">
-              <rect width="375" height="500" fill={T.color.neutral300} />
-              <polygon points="75,420 160,180 250,420" fill="white" opacity="0.6" />
-              <polygon points="200,420 265,250 330,420" fill="white" opacity="0.4" />
-            </svg>
-          )}
-        </div>
+        {/* Cover Image (Mobile only) */}
+        {!isDesktop && (
+          <div style={{
+            width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
+            border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+            overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {data.coverImage ? (
+              <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
+            ) : (
+              <svg width="100%" height="100%" viewBox="0 0 375 500" preserveAspectRatio="xMidYMid slice">
+                <rect width="375" height="500" fill={T.color.neutral300} />
+                <polygon points="75,420 160,180 250,420" fill="white" opacity="0.6" />
+                <polygon points="200,420 265,250 330,420" fill="white" opacity="0.4" />
+              </svg>
+            )}
+          </div>
+        )}
 
         {/* Progress Bar — two layers: confirmed (solid green) + pending (faded green) */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
@@ -2669,7 +2717,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
       </div>
 
       {/* Latest Activity Feed */}
-      <div style={{ padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
+      <div style={{ padding: isDesktop ? "0" : "0 16px", width: "100%", boxSizing: "border-box" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 20, width: "100%" }}>
           <h3 style={{
             fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
@@ -2733,7 +2781,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
       </div>
 
       {/* Organizer Section */}
-      <div style={{ padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
+      <div style={{ padding: isDesktop ? "0" : "0 16px", width: "100%", boxSizing: "border-box" }}>
         <div style={{
           backgroundColor: T.color.neutral300, borderRadius: 8, padding: 16,
           display: "flex", flexDirection: "column", gap: 8, width: "100%", boxSizing: "border-box",
@@ -2765,6 +2813,8 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
           </div>
         </div>
       </div>
+      {/* END RIGHT COLUMN */}
+      </div>{/* END Two-column wrapper */}
     </div>
   );
 }
@@ -3918,11 +3968,13 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn, refreshKey }) {
     goTo(20);
   };
 
+  const isDesktop = useIsDesktop();
+
   return (
     <div style={{
       backgroundColor: "transparent", display: "flex", flexDirection: "column",
       gap: 24, alignItems: "center", paddingTop: 48, paddingBottom: 48,
-      width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
+      width: "100%", maxWidth: isDesktop ? 1200 : 375, minHeight: "100vh", margin: "0 auto",
       fontFamily: T.font.body, boxSizing: "border-box",
     }}>
       {/* Header: account + logo + menu */}
@@ -3987,7 +4039,7 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn, refreshKey }) {
         </div>
 
         {/* Hosting section */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 16px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: isDesktop ? "0 48px" : "0 16px", width: "100%", boxSizing: "border-box" }}>
           <h2 style={{
             fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
             color: T.color.primary, margin: 0,
@@ -4007,25 +4059,29 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn, refreshKey }) {
             </p>
           )}
 
-          {funds.map(fund => {
-            const goalNum = Number(fund.goal) || 0;
-            const raised = Number(fund.raised_amount) || 0;
-            const pct = goalNum > 0 ? Math.min((raised / goalNum) * 100, 100) : 0;
-            return (
-              <div
-                key={fund.id}
-                onClick={() => handleFundTap(fund)}
-                style={{
-                  backgroundColor: T.color.white, borderRadius: 16,
-                  boxShadow: "0px 4px 16px rgba(0,0,0,0.08)",
-                  padding: 16, display: "flex", gap: 10, alignItems: "center",
-                  cursor: "pointer", width: 343, boxSizing: "border-box",
-                }}
+          <div style={{
+            display: "grid", gridTemplateColumns: isDesktop ? "repeat(3, 1fr)" : "1fr", gap: 16,
+            width: "100%", boxSizing: "border-box",
+          }}>
+            {funds.map(fund => {
+              const goalNum = Number(fund.goal) || 0;
+              const raised = Number(fund.raised_amount) || 0;
+              const pct = goalNum > 0 ? Math.min((raised / goalNum) * 100, 100) : 0;
+              return (
+                <div
+                  key={fund.id}
+                  onClick={() => handleFundTap(fund)}
+                  style={{
+                    backgroundColor: T.color.white, borderRadius: 16,
+                    boxShadow: "0px 4px 16px rgba(0,0,0,0.08)",
+                    padding: 16, display: "flex", flexDirection: isDesktop ? "column" : "row", gap: isDesktop ? 12 : 10, alignItems: isDesktop ? "flex-start" : "center",
+                    cursor: "pointer", width: isDesktop ? "100%" : 343, boxSizing: "border-box",
+                  }}
               >
                 {/* Thumbnail */}
                 <div style={{
-                  width: 80, height: 80, borderRadius: 16, backgroundColor: T.color.neutral300,
-                  flexShrink: 0, overflow: "hidden",
+                  width: isDesktop ? "100%" : 80, height: isDesktop ? 200 : 80, borderRadius: 16, backgroundColor: T.color.neutral300,
+                  flexShrink: 0, overflow: "hidden", aspectRatio: isDesktop ? "1/1" : undefined,
                 }}>
                   {fund.cover_photo_url && (
                     <img src={fund.cover_photo_url} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(fund.cover_image_position || {x:50,y:50}).x}% ${(fund.cover_image_position || {x:50,y:50}).y}%` }} />
@@ -4072,11 +4128,12 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn, refreshKey }) {
                 </div>
               </div>
             );
-          })}
+            })}
+          </div>
         </div>
 
         {/* Supporting section */}
-        <div style={{ padding: "0 16px" }}>
+        <div style={{ padding: isDesktop ? "0 48px" : "0 16px", width: "100%", boxSizing: "border-box" }}>
           <h2 style={{
             fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
             color: T.color.primary, margin: 0,
@@ -4100,18 +4157,19 @@ function GuardianFundPage({ data, goTo, goHome }) {
   const totalPct = goalNum > 0 ? Math.min(((confirmed + pending) / goalNum) * 100, 100) : 0;
   const fundTitle = data.title || "My Summa Fund";
   const pendingCount = (data.donations || []).filter(d => !d.confirmed && !d.ignored).length;
+  const isDesktop = useIsDesktop();
 
   return (
     <div style={{
       backgroundColor: "transparent", display: "flex", flexDirection: "column",
-      gap: 24, alignItems: "center", paddingTop: 48, paddingBottom: 48,
-      width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
+      gap: 0, alignItems: "center", paddingTop: 0, paddingBottom: 48,
+      width: "100%", maxWidth: isDesktop ? 1200 : 375, minHeight: isDesktop ? "auto" : "100vh", margin: "0 auto",
       fontFamily: T.font.body, boxSizing: "border-box",
     }}>
       {/* Header: back + pill buttons */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        width: "100%", padding: "16px 16px", boxSizing: "border-box",
+        width: "100%", padding: isDesktop ? "16px 48px" : "16px 16px", boxSizing: "border-box",
         borderBottom: `1px solid ${T.color.neutral500}`,
       }}>
         <button onClick={() => goTo(19, "left")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
@@ -4191,10 +4249,42 @@ function GuardianFundPage({ data, goTo, goHome }) {
         </div>
       </div>
 
-      {/* Fund details */}
+      {/* Two-column wrapper (desktop) / single column (mobile) */}
       <div style={{
-        display: "flex", flexDirection: "column", gap: 24, alignItems: "center",
-        padding: "0 16px", width: "100%", boxSizing: "border-box",
+        display: "flex", flexDirection: isDesktop ? "row" : "column",
+        gap: isDesktop ? 48 : 24, alignItems: isDesktop ? "flex-start" : "center",
+        width: "100%", padding: isDesktop ? "24px 48px 0" : "0", boxSizing: "border-box",
+      }}>
+
+      {/* LEFT COLUMN (Cover Image) - Desktop: sticky sidebar */}
+      {isDesktop && (
+        <div style={{
+          flex: 1, position: "sticky", top: 80, maxHeight: "calc(100vh - 128px)",
+          display: "flex", flexDirection: "column", gap: 0,
+        }}>
+          <div style={{
+            width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
+            border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+            overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {data.coverImage ? (
+              <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
+            ) : (
+              <svg width="100%" height="100%" viewBox="0 0 375 500" preserveAspectRatio="xMidYMid slice">
+                <rect width="375" height="500" fill={T.color.neutral300} />
+                <polygon points="75,420 160,180 250,420" fill="white" opacity="0.6" />
+                <polygon points="200,420 265,250 330,420" fill="white" opacity="0.4" />
+              </svg>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* RIGHT COLUMN (Content) */}
+      <div style={{
+        flex: isDesktop ? 1 : undefined, maxWidth: isDesktop ? 520 : undefined,
+        display: "flex", flexDirection: "column", gap: 24, alignItems: isDesktop ? "flex-start" : "center",
+        padding: isDesktop ? 0 : "0 16px", width: isDesktop ? "100%" : "100%", boxSizing: "border-box",
       }}>
         {/* Title */}
         <div style={{ width: "100%", textAlign: "left" }}>
@@ -4206,12 +4296,13 @@ function GuardianFundPage({ data, goTo, goHome }) {
           </h1>
         </div>
 
-        {/* Cover Image */}
-        <div style={{
-          width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
-          border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
-          overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
+        {/* Cover Image (Mobile only) */}
+        {!isDesktop && (
+          <div style={{
+            width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
+            border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
+            overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
           {data.coverImage ? (
             <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
           ) : (
@@ -4222,6 +4313,7 @@ function GuardianFundPage({ data, goTo, goHome }) {
             </svg>
           )}
         </div>
+        )}
 
         {/* Progress Bar */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
@@ -4326,6 +4418,8 @@ function GuardianFundPage({ data, goTo, goHome }) {
           </div>
         )}
       </div>
+      {/* END RIGHT COLUMN */}
+      </div>{/* END Two-column wrapper */}
     </div>
   );
 }
@@ -4831,10 +4925,11 @@ const SummaLogo = () => (
 );
 
 function StartScreen({ onSignUp, onSignIn, onJumpToLatest }) {
+  const isDesktop = useIsDesktop();
   return (
     <div style={{
       display: "flex", flexDirection: "column", justifyContent: "flex-end",
-      width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
+      width: "100%", maxWidth: isDesktop ? 420 : 375, minHeight: "100vh", margin: "0 auto",
       position: "relative", overflow: "hidden",
     }}>
       {/* Invisible dev shortcut — tap top-left corner to jump to latest screen */}
@@ -4928,6 +5023,7 @@ function SignUpScreen({ onCreateAccount, onBack }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const isDesktop = useIsDesktop();
 
   const handleCreate = () => {
     const parts = fullName.trim().split(/\s+/);
@@ -4941,8 +5037,8 @@ function SignUpScreen({ onCreateAccount, onBack }) {
   return (
     <div style={{
       display: "flex", flexDirection: "column", gap: 48,
-      width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
-      padding: "80px 16px 60px 16px", boxSizing: "border-box",
+      width: "100%", maxWidth: isDesktop ? 420 : 375, minHeight: "100vh", margin: "0 auto",
+      padding: isDesktop ? "80px 48px 60px 48px" : "80px 16px 60px 16px", boxSizing: "border-box",
       fontFamily: T.font.body, position: "relative",
     }}>
       {/* Content */}
@@ -5002,14 +5098,15 @@ function SignInScreen({ onSignIn, onBack }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const isDesktop = useIsDesktop();
 
   const canSubmit = email.trim() && password.trim();
 
   return (
     <div style={{
       display: "flex", flexDirection: "column", gap: 48,
-      width: "100%", maxWidth: 375, minHeight: "100vh", margin: "0 auto",
-      padding: "80px 16px 60px 16px", boxSizing: "border-box",
+      width: "100%", maxWidth: isDesktop ? 420 : 375, minHeight: "100vh", margin: "0 auto",
+      padding: isDesktop ? "80px 48px 60px 48px" : "80px 16px 60px 16px", boxSizing: "border-box",
       fontFamily: T.font.body, position: "relative",
     }}>
       {/* Content */}
