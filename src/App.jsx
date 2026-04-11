@@ -606,7 +606,8 @@ function SetupASummaFund0({ data, setData, onNext, onBack, goTo }) {
 
   const handleForMe = () => {
     setData(d => ({ ...d, fundFor: "myself" }));
-    goTo(1);
+    // Skip name entry (Screen 1) — we already have the creator's name from sign-up
+    goTo(3);
   };
 
   return (
@@ -5270,7 +5271,7 @@ export default function SummaFundSetup() {
     }
     if (screen === 0) return;
     if (screen === 1 || screen === 2) goTo(0, "left");
-    else if (screen === 3) goTo(data.fundFor === "myself" ? 1 : 0, "left");
+    else if (screen === 3) goTo(0, "left");
     else if (screen === 4) goTo(3, "left");
     else if (screen === 5) goTo(4, "left");
     else if (screen === 6) goTo(5, "left");
