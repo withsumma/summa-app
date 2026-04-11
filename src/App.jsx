@@ -596,29 +596,49 @@ function Headline({ subtitle, title, body, align = "center" }) {
 // SCREEN: Setup a Summa Fund - 0
 // ============================================================
 function SetupASummaFund0({ data, setData, onNext, onBack, goTo }) {
-  const handleSelect = (choice) => {
-    setData(d => ({ ...d, fundFor: choice }));
-    // Navigate directly — avoids stale closure on data.fundFor
-    setTimeout(() => goTo(choice === "myself" ? 1 : 2), 300);
+  const [childName, setChildName] = useState(data.recipientName || "");
+
+  const handleContinue = () => {
+    setData(d => ({ ...d, fundFor: "someone", recipientName: childName }));
+    // Skip Screen 2 (recipient name) since we already collected it here — go straight to Screen 3 (title)
+    goTo(3);
+  };
+
+  const handleForMe = () => {
+    setData(d => ({ ...d, fundFor: "myself" }));
+    goTo(1);
   };
 
   return (
-    <ScreenLayout onBack={onBack} activeStep={1}>
-      <Headline subtitle="First thing's first 🫡" title="Who will this Summa fund be for?" />
-      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-        <ButtonMega
-          title="Myself"
-          description="I am creating a Summa Fund to raise money for my own goals"
-          selected={data.fundFor === "myself"}
-          onClick={() => handleSelect("myself")}
-        />
-        <ButtonMega
-          title="Someone I care for"
-          description="I am setting up a Summa Fund on behalf of someone else"
-          selected={data.fundFor === "someone"}
-          onClick={() => handleSelect("someone")}
-        />
-      </div>
+    <ScreenLayout
+      onBack={onBack}
+      activeStep={1}
+      bottomContent={
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
+          <ButtonPrimary text="Continue" onClick={handleContinue} disabled={!childName.trim()} />
+          <span
+            onClick={handleForMe}
+            style={{
+              fontFamily: T.font.heading,
+              fontSize: 16,
+              fontWeight: 400,
+              lineHeight: 1.2,
+              color: T.color.primary,
+              textDecoration: "underline",
+              cursor: "pointer",
+            }}
+          >
+            This fund is for me
+          </span>
+        </div>
+      }
+    >
+      <Headline subtitle="First thing's first 🫡" title={"Who is this\nSumma fund for?"} />
+      <InputField
+        label="Child's First Name"
+        value={childName}
+        onChange={v => setChildName(v)}
+      />
     </ScreenLayout>
   );
 }
@@ -5250,7 +5270,7 @@ export default function SummaFundSetup() {
     }
     if (screen === 0) return;
     if (screen === 1 || screen === 2) goTo(0, "left");
-    else if (screen === 3) goTo(data.fundFor === "myself" ? 0 : 2, "left");
+    else if (screen === 3) goTo(data.fundFor === "myself" ? 1 : 0, "left");
     else if (screen === 4) goTo(3, "left");
     else if (screen === 5) goTo(4, "left");
     else if (screen === 6) goTo(5, "left");
