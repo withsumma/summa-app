@@ -29,14 +29,17 @@ export const supabase = supabaseUrl && supabaseAnonKey
 // Creates an account with email + password, stores name in metadata
 // Returns { user, error }
 // ============================================================
-export async function signUpUser({ email, password, firstName, lastName }) {
+export async function signUpUser({ email, password, firstName, lastName, phone }) {
   if (!supabase) return { user: null, error: "Supabase not configured" };
+
+  const metadata = { first_name: firstName, last_name: lastName };
+  if (phone) metadata.phone = phone;
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { first_name: firstName, last_name: lastName },
+      data: metadata,
     },
   });
 
@@ -254,6 +257,7 @@ export async function deleteFund(fundId) {
 // ============================================================
 // API: Record a contribution
 // Called when a supporter submits their name/message (screen 16)
+// After recording, sends an SMS notification to the fund creator
 // Returns { contribution, error }
 // ============================================================
 export async function recordContribution({ fundId, amount, paymentMethod, supporterName, message }) {
@@ -271,7 +275,52 @@ export async function recordContribution({ fundId, amount, paymentMethod, suppor
     .select()
     .single();
 
+  // Send SMS notification to fund creator (fire-and-forget, don't block on failure)
+  if (contribution && !error) {
+    notifyCreatorOfDonation({
+      fundId,
+      donorName: supporterName || "Anonymous",
+      amount,
+    }).catch((err) => console.warn("SMS notification failed:", err));
+  }
+
   return { contribution, error };
+}
+
+
+// ============================================================
+// SMS: Notify fund creator of a new donation
+// Looks up the fund to get creator info, then calls the edge function
+// ============================================================
+async function notifyCreatorOfDonation({ fundId, donorName, amount }) {
+  if (!supabase) return;
+
+  // Look up the fund to get the title and creator_id
+  const { data: fund } = await supabase
+    .from("funds")
+    .select("title, creator_id")
+    .eq("id", fundId)
+    .single();
+
+  if (!fund?.creator_id) return;
+
+  // Look up the creator's phone from their user metadata
+  // We use the admin-level user lookup via edge function, or check metadata
+  // For now, we call the edge function and pass the creator_id to look up the phone
+  const { data: { session } } = await supabase.auth.getSession();
+
+  const response = await supabase.functions.invoke("notify-donation", {
+    body: {
+      donorName,
+      amount,
+      fundTitle: fund.title,
+      creatorId: fund.creator_id,
+    },
+  });
+
+  if (response.error) {
+    console.warn("notify-donation error:", response.error);
+  }
 }
 
 

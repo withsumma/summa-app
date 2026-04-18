@@ -6077,13 +6077,14 @@ function SignUpScreen({ onCreateAccount, onBack }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const isDesktop = useIsDesktop();
 
   const handleCreate = () => {
     const parts = fullName.trim().split(/\s+/);
     const firstName = parts[0] || "";
     const lastName = parts.slice(1).join(" ") || "";
-    onCreateAccount({ firstName, lastName, email, password });
+    onCreateAccount({ firstName, lastName, email, password, phone: phone.trim() || null });
   };
 
   const canSubmit = fullName.trim() && email.trim() && password.trim();
@@ -6121,6 +6122,15 @@ function SignUpScreen({ onCreateAccount, onBack }) {
         <InputField label="Full name" value={fullName} onChange={setFullName} />
         <InputField label="Email" value={email} onChange={setEmail} type="email" />
         <InputField label="Password" value={password} onChange={setPassword} type="password" />
+        <div style={{ width: "100%", maxWidth: 343, display: "flex", flexDirection: "column", gap: 8 }}>
+          <InputField label="Phone number (optional)" value={phone} onChange={setPhone} type="tel" />
+          <span style={{
+            fontFamily: T.font.body, fontSize: 13, fontWeight: 400, lineHeight: 1.4,
+            color: T.color.neutral700, paddingLeft: 4,
+          }}>
+            Add your number to get text notifications when you receive a donation.
+          </span>
+        </div>
       </div>
 
       {/* Create account button */}
@@ -6544,8 +6554,8 @@ export default function SummaFundSetup() {
           <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
           <style>{`input::placeholder, textarea::placeholder { color: ${T.color.neutral700} !important; opacity: 1; }`}</style>
           <SignUpScreen
-            onCreateAccount={async ({ firstName, lastName, email, password }) => {
-              const { user, error } = await signUpUser({ email, password, firstName, lastName });
+            onCreateAccount={async ({ firstName, lastName, email, password, phone }) => {
+              const { user, error } = await signUpUser({ email, password, firstName, lastName, phone });
               if (error) {
                 alert(typeof error === "string" ? error : error.message || "Sign up failed. Please try again.");
                 return;
