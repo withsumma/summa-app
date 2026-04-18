@@ -5064,7 +5064,7 @@ function BlogCard({ blog, isDesktop }) {
   );
 }
 
-function LandingPage({ onStart, onLogin }) {
+function LandingPage({ onStart, onLogin, onPrivacy }) {
   const isDesktop = useIsDesktop();
   const scrollRef = useRef(null);
 
@@ -5277,15 +5277,15 @@ function LandingPage({ onStart, onLogin }) {
         }}>
           {/* Left: Links */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <a href="#" style={{
+            <a href="#" onClick={(e) => { e.preventDefault(); }} style={{
               fontFamily: "'Syne', sans-serif", fontWeight: 400, fontSize: 16, lineHeight: 1.2,
-              color: "#131820", textDecoration: "underline",
+              color: "#131820", textDecoration: "underline", cursor: "pointer",
             }}>
               Terms of Service
             </a>
-            <a href="#" style={{
+            <a href="#" onClick={(e) => { e.preventDefault(); onPrivacy && onPrivacy(); }} style={{
               fontFamily: "'Syne', sans-serif", fontWeight: 400, fontSize: 16, lineHeight: 1.2,
-              color: "#131820", textDecoration: "underline",
+              color: "#131820", textDecoration: "underline", cursor: "pointer",
             }}>
               Privacy Policy
             </a>
@@ -5309,6 +5309,339 @@ function LandingPage({ onStart, onLogin }) {
             </span>
           </div>
           {/* Right: Social icons */}
+          <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+            <TikTokIcon size={32} />
+            <InstagramIcon size={32} />
+            <FacebookIcon size={32} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// PRIVACY POLICY PAGE
+// ============================================================
+
+const PRIVACY_SECTIONS = [
+  {
+    title: "1. Scope and Updates to This Privacy Notice",
+    paragraphs: [
+      'This Privacy Notice applies to personal information processed by With Summa across our websites and other online or offline services, collectively referred to as the "Services."',
+      "Updates to This Privacy Notice: We may update this Privacy Notice periodically to reflect changes in our practices or applicable laws. In the event of significant updates, we will notify you as required. By continuing to use our Services after updates become effective, you agree to the revised Privacy Notice.",
+    ],
+  },
+  {
+    title: "2. Information We Collect",
+    paragraphs: [
+      "We collect personal information through direct interactions, automatic data collection, and third-party sources.",
+      "Personal Information You Provide: This includes information shared during account creation, communications, surveys, contests, and events. For example:",
+    ],
+    bullets: ["\u2022 Guardians: Name, email, phone, address, and professional details."],
+  },
+  {
+    title: "Automatically Collected Information",
+    paragraphs: [
+      "When you interact with our Services, we may collect data such as IP addresses, browser settings, and usage patterns through cookies and similar technologies.",
+      "Examples of Automatically Collected Data:",
+    ],
+    bullets: [
+      "\u2022 Cookies: Small files that remember your preferences.",
+      "\u2022 Pixel Tags/Web Beacons: Help us understand engagement with emails and web pages.",
+      "\u2022 Analytics Data: Information on how you navigate and use our Services.",
+    ],
+  },
+  {
+    title: "3. How We Use Your Information",
+    paragraphs: ["Your personal information is used to:"],
+    bullets: [
+      "\u2022 Provide Services: Manage accounts, process transactions, and respond to inquiries.",
+      "\u2022 Administrative Purposes: Improve security, ensure compliance, and enhance functionality.",
+      "\u2022 Marketing: Share relevant offers and communications.",
+      "\u2022 Other Uses: With your consent or as required by law.",
+    ],
+  },
+  {
+    title: "4. Sharing Your Information",
+    paragraphs: ["We may share your information with:"],
+    bullets: [
+      "\u2022 Service Providers: To support operations like IT support.",
+      "\u2022 Business Partners: To provide joint services or products.",
+      "\u2022 Third Parties: For legal compliance, or protection against fraud.",
+    ],
+  },
+  {
+    title: "5. Your Privacy Choices and Rights",
+    paragraphs: ["We respect your privacy preferences and rights, including the ability to:"],
+    bullets: [
+      "\u2022 Access and Request Data: View and request a copy of your information.",
+      "\u2022 Correct or Delete Data: Update inaccuracies or delete personal data.",
+      "\u2022 Restrict or Object to Processing: Limit how we use your information.",
+      "\u2022 Manage Communications: Opt out of marketing emails or text messages.",
+    ],
+  },
+  {
+    title: "6. Data Security",
+    paragraphs: ["We prioritize the security of your personal information and employ measures to protect it. However, no system is completely secure. We encourage vigilance when sharing sensitive information."],
+  },
+  {
+    title: "7. International Data Transfers",
+    paragraphs: ["Your information may be transferred to and processed in countries with differing data protection laws. We follow legal safeguards, such as EU Standard Contractual Clauses, for international data transfers."],
+  },
+  {
+    title: "8. Data Retention",
+    paragraphs: ["We retain personal information for as long as necessary to provide services, fulfill legal obligations, or meet business purposes."],
+  },
+  {
+    title: "9. California Residents",
+    paragraphs: ["California residents have specific rights under the California Consumer Privacy Act (CCPA), including access, deletion, and non-discrimination when exercising these rights. Contact us to exercise these rights."],
+  },
+  {
+    title: "10. Nevada Residents",
+    paragraphs: ["Nevada residents may opt out of the sale of their personal information, though With Summa does not currently sell personal data."],
+  },
+  {
+    title: "11. Children\u2019s Information",
+    paragraphs: ["Our Services are not intended for children under 18. If you believe a child has shared personal information with us, please contact us so we can take appropriate action."],
+  },
+  {
+    title: "12. Third-Party Services",
+    paragraphs: ["Our Services may link to third-party websites or services, which operate independently. We encourage reviewing their privacy policies."],
+  },
+];
+
+function PrivacyPolicyPage({ onStart, onLogin, onBack }) {
+  const isDesktop = useIsDesktop();
+  const px = isDesktop ? 160 : 20;
+
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column", alignItems: "center",
+      width: "100%", minHeight: "100vh", fontFamily: T.font.body,
+      backgroundColor: "#fff",
+    }}>
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&family=Syne:wght@400&display=swap" rel="stylesheet" />
+
+      {/* ---- NAV BAR ---- */}
+      <div style={{
+        width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+        padding: `24px ${px}px`, boxSizing: "border-box", backgroundColor: "#fff",
+        position: "sticky", top: 0, zIndex: 100,
+      }}>
+        <div style={{
+          width: "100%", maxWidth: 1120, display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <span onClick={onBack} style={{
+            fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: isDesktop ? 28 : 22,
+            color: "#131820", cursor: "pointer",
+          }}>
+            summa
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: isDesktop ? 32 : 16 }}>
+            <button onClick={onStart} style={{
+              background: "linear-gradient(90deg, #eafe7e, #d7ff77)", border: "none",
+              borderRadius: 24, padding: isDesktop ? "16px 32px" : "12px 20px", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
+              color: "#131820", whiteSpace: "nowrap",
+            }}>
+              Start with Summa
+            </button>
+            <button onClick={onLogin} style={{
+              background: "none", border: "none", cursor: "pointer", padding: isDesktop ? "24px 12px" : "12px 4px",
+              fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
+              color: "#000", textDecoration: "underline",
+            }}>
+              Login
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ---- HERO ---- */}
+      <div style={{
+        width: "100%", background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
+        padding: `${isDesktop ? 96 : 64}px ${px}px`, boxSizing: "border-box",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        textAlign: "center",
+      }}>
+        <div style={{ maxWidth: 960, width: "100%", display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+          <h1 style={{
+            fontFamily: "'Poppins', sans-serif", fontWeight: 800,
+            fontSize: isDesktop ? 48 : 32, lineHeight: 1.4,
+            color: "#131820", margin: 0,
+          }}>
+            Privacy Notice
+          </h1>
+          <p style={{
+            fontFamily: T.font.body, fontWeight: 400, fontSize: 20, lineHeight: 1.6,
+            color: "#131820", margin: 0,
+          }}>
+            Last Updated: April 11, 2026
+          </p>
+        </div>
+      </div>
+
+      {/* ---- CONTENT ---- */}
+      <div style={{
+        width: "100%", maxWidth: isDesktop ? 800 : undefined,
+        padding: `64px ${isDesktop ? 0 : px}px`, boxSizing: "border-box",
+        display: "flex", flexDirection: "column", gap: 32,
+      }}>
+        {/* Intro */}
+        <p style={{
+          fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 20 : 16, lineHeight: 1.6,
+          color: "#333", margin: 0,
+        }}>
+          We at With Summa (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) are committed to protecting your personal information. This Privacy Notice is designed to provide a clear understanding of how we collect, use, process, and share your personal information, and to inform you of your privacy rights.
+        </p>
+
+        {/* Key Highlights Card */}
+        <div style={{
+          backgroundColor: "#62c6ff", borderRadius: 24, padding: 32,
+          display: "flex", flexDirection: "column", gap: 16,
+        }}>
+          <h2 style={{
+            fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 24, lineHeight: 1.4,
+            color: "#131820", margin: 0,
+          }}>
+            Key Highlights
+          </h2>
+          {[
+            "\u2022 What We Collect: Information you provide directly, data collected automatically, and information from third parties.",
+            "\u2022 How We Use It: To provide and improve our Services and for administrative purposes.",
+            "\u2022 Your Rights: Access, correct, delete, and manage your data preferences.",
+            "\u2022 Contact Us: For any concerns or to exercise your rights, email us at hello@withsumma.com",
+          ].map((text, i) => (
+            <p key={i} style={{
+              fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 18 : 16, lineHeight: 1.6,
+              color: "#131820", margin: 0,
+            }}>
+              {text}
+            </p>
+          ))}
+        </div>
+
+        {/* Numbered Sections */}
+        {PRIVACY_SECTIONS.map((section, i) => (
+          <div key={i} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <h2 style={{
+              fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 24, lineHeight: 1.4,
+              color: "#131820", margin: 0,
+            }}>
+              {section.title}
+            </h2>
+            {(section.paragraphs || []).map((p, j) => (
+              <p key={j} style={{
+                fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 18 : 16, lineHeight: 1.6,
+                color: "#333", margin: 0,
+              }}>
+                {p}
+              </p>
+            ))}
+            {(section.bullets || []).map((b, j) => (
+              <p key={`b${j}`} style={{
+                fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 18 : 16, lineHeight: 1.6,
+                color: "#333", margin: 0,
+              }}>
+                {b}
+              </p>
+            ))}
+          </div>
+        ))}
+
+        {/* Glossary */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <h2 style={{
+            fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 24, lineHeight: 1.4,
+            color: "#131820", margin: 0,
+          }}>
+            Glossary
+          </h2>
+          {[
+            "\u2022 Cookies: Small text files used to enhance your experience.",
+            "\u2022 Pixel Tags: Tools for measuring email and web engagement.",
+            "\u2022 IP Address: A unique address identifying devices on the internet.",
+            "\u2022 De-identified Information: Data that has been stripped of personal identifiers.",
+          ].map((text, i) => (
+            <p key={i} style={{
+              fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 18 : 16, lineHeight: 1.6,
+              color: "#333", margin: 0,
+            }}>
+              {text}
+            </p>
+          ))}
+        </div>
+
+        {/* Contact Card */}
+        <div style={{
+          backgroundColor: "#ff7cb4", borderRadius: 24, padding: 32,
+          display: "flex", flexDirection: "column", gap: 12,
+        }}>
+          <h2 style={{
+            fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 24, lineHeight: 1.4,
+            color: "#131820", margin: 0,
+          }}>
+            13. Contact Us
+          </h2>
+          <div style={{
+            fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 18 : 16, lineHeight: 1.6,
+            color: "#131820",
+          }}>
+            <p style={{ margin: 0 }}>For questions or to exercise your rights, please contact us at:</p>
+            <br />
+            <p style={{ margin: 0 }}>With Summa</p>
+            <p style={{ margin: 0 }}>Email: Hello@withsumma.com</p>
+            <br />
+            <p style={{ margin: 0 }}>We are here to ensure your privacy is respected and your concerns are addressed promptly.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ---- FOOTER ---- */}
+      <div style={{
+        width: "100%", padding: `64px ${px}px`, boxSizing: "border-box",
+        maxWidth: 1440, margin: "0 auto",
+      }}>
+        <div style={{
+          background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
+          borderRadius: 24, padding: 32,
+          display: "flex", flexDirection: isDesktop ? "row" : "column",
+          alignItems: isDesktop ? "center" : "flex-start",
+          justifyContent: "space-between", gap: isDesktop ? 0 : 32,
+          width: "100%", boxSizing: "border-box",
+        }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <a href="#" onClick={(e) => { e.preventDefault(); }} style={{
+              fontFamily: "'Syne', sans-serif", fontWeight: 400, fontSize: 16, lineHeight: 1.2,
+              color: "#131820", textDecoration: "underline", cursor: "pointer",
+            }}>
+              Terms of Service
+            </a>
+            <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{
+              fontFamily: "'Syne', sans-serif", fontWeight: 400, fontSize: 16, lineHeight: 1.2,
+              color: "#131820", textDecoration: "underline", cursor: "pointer",
+            }}>
+              Privacy Policy
+            </a>
+          </div>
+          <div style={{
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
+            order: isDesktop ? 0 : -1,
+          }}>
+            <span style={{
+              fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 32,
+              color: "#131820",
+            }}>
+              summa
+            </span>
+            <span style={{
+              fontFamily: T.font.body, fontWeight: 400, fontSize: 14, lineHeight: 1.4,
+              color: "#131820", textAlign: "center",
+            }}>
+              Summa &copy; 2026
+            </span>
+          </div>
           <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
             <TikTokIcon size={32} />
             <InstagramIcon size={32} />
@@ -5602,6 +5935,7 @@ export default function SummaFundSetup() {
   const [showStart, setShowStart] = useState(true);
   const [showSignUp, setShowSignUp] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [screen, setScreen] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -5943,12 +6277,29 @@ export default function SummaFundSetup() {
         </div>
       );
     }
+    // Privacy Policy page
+    if (showPrivacy) {
+      return (
+        <PrivacyPolicyPage
+          onStart={() => {
+            setShowPrivacy(false);
+            if (isSignedIn) {
+              setShowStart(false);
+              setScreen(0);
+            } else {
+              setShowSignUp(true);
+            }
+          }}
+          onLogin={() => { setShowPrivacy(false); setShowSignIn(true); }}
+          onBack={() => { setShowPrivacy(false); }}
+        />
+      );
+    }
     // Default: show the marketing landing page
     return (
       <LandingPage
         onStart={() => {
           if (isSignedIn) {
-            // Already signed in — go directly to fund creation
             setShowStart(false);
             setScreen(0);
           } else {
@@ -5956,6 +6307,7 @@ export default function SummaFundSetup() {
           }
         }}
         onLogin={() => setShowSignIn(true)}
+        onPrivacy={() => { setShowPrivacy(true); window.scrollTo({ top: 0 }); }}
       />
     );
   }
