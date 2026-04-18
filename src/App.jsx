@@ -4921,6 +4921,406 @@ function GuardianReviewFund({ data, setData, goTo }) {
 }
 
 // ============================================================
+// LANDING PAGE — Marketing Home (1.0 Home from Figma)
+// ============================================================
+
+// Landing page image assets
+const LANDING_IMAGES = {
+  heroBg: "/summa-hero.png",
+  providers: {
+    nySociety: "https://www.figma.com/api/mcp/asset/b7535dc8-7585-4cf9-aa44-31a3e10eeb60",
+    devoreDance: "https://www.figma.com/api/mcp/asset/f5ca2262-b600-4d4b-9457-fd147137a59e",
+    bricks4kids: "https://www.figma.com/api/mcp/asset/991191a5-5765-46ac-923d-2c58094fc145",
+    whyHateMath: "https://www.figma.com/api/mcp/asset/ef6efa65-f1dc-49e0-bd87-cffb99867095",
+    binnsMartial: "https://www.figma.com/api/mcp/asset/8c6f9f31-2485-4fae-9450-95700e95542d",
+  },
+  blog: {
+    community: "https://www.figma.com/api/mcp/asset/6b20bab9-d966-49d5-ad86-adbcc14aae3c",
+    crowdfunding: "https://www.figma.com/api/mcp/asset/cddc2900-3986-454e-8619-46fca7da3a71",
+    extracurricular: "https://www.figma.com/api/mcp/asset/93278ec4-66d1-4999-b4b2-859f9adfcfc0",
+    findingFit: "https://www.figma.com/api/mcp/asset/b023edaf-4af3-40c8-88a4-dbac0ad9085d",
+  },
+};
+
+const PROVIDER_DATA = [
+  { name: "NY Society of Play", address: "724 Manhattan Ave, Brooklyn, NY 11222", color: "#62c6ff", image: LANDING_IMAGES.providers.nySociety, desc: "A unique space for kids 6+ to enjoy board games, role-playing, and storytelling. Offers after-school, weekend, and break programs in a cozy setting." },
+  { name: "Devore Dance", address: "Flatbush, Brooklyn 11203", color: "#ff7cb4", image: LANDING_IMAGES.providers.devoreDance, desc: "A beloved dance studio in Hollis, Queens serving local families for generations. Saturday classes for ages 4+ take place in a dedicated studio space that encourages creativity and growth." },
+  { name: "Bricks4Kids", address: "114-02 Guy R Brewer Blvd Suite 224, Rochdale, NY 11434", color: "#e7fd57", image: LANDING_IMAGES.providers.bricks4kids, desc: "A hands-on STEM program in South Jamaica, Queens, at the Multi Service Center. Offers after-school sessions (1 day/week) and summer camps focused on building and problem-solving." },
+  { name: "Why Hate Math", address: "304 Tompkins Ave, Brooklyn, NY 11216", color: "#00d0c5", image: LANDING_IMAGES.providers.whyHateMath, desc: "A friendly center for kids 6+ offering one-on-one and group sessions, homework help, and school break camps." },
+  { name: "Binns Victory Martial Arts", address: "Flatbush, Brooklyn 11203", color: "#ffa967", image: LANDING_IMAGES.providers.binnsMartial, desc: "A family-owned karate dojo in Flatbush, Brooklyn, offering classes for ages 2\u201317+. Discounted intro sessions and free Baby Cubs trials (ages 2\u20134) available." },
+];
+
+const BLOG_DATA = [
+  { title: "Community Matters: How Local Programs and Support Build Stronger Families", image: LANDING_IMAGES.blog.community },
+  { title: "Overcoming Financial Barriers: How Crowdfunding Can Support Your Child\u2019s Passions", image: LANDING_IMAGES.blog.crowdfunding },
+  { title: "Unlocking Potential: How Extracurricular Activities Boost Confidence and Skills in Kids", image: LANDING_IMAGES.blog.extracurricular },
+  { title: "Finding the Right Fit: Tips for Choosing Extracurricular Programs Your Child Will Love", image: LANDING_IMAGES.blog.findingFit },
+];
+
+// Social icon SVGs for provider cards and footer
+const GlobeIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" stroke="#131820" strokeWidth="1.5"/>
+    <path d="M2 12h20M12 2c2.5 2.5 4 5.5 4 10s-1.5 7.5-4 10c-2.5-2.5-4-5.5-4-10s1.5-7.5 4-10z" stroke="#131820" strokeWidth="1.5"/>
+  </svg>
+);
+const TikTokIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M9 12a4 4 0 1 0 4 4V4c1 2.5 3.5 4 6 4" stroke="#131820" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+const InstagramIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <rect x="3" y="3" width="18" height="18" rx="5" stroke="#131820" strokeWidth="1.5"/>
+    <circle cx="12" cy="12" r="4" stroke="#131820" strokeWidth="1.5"/>
+    <circle cx="17.5" cy="6.5" r="1" fill="#131820"/>
+  </svg>
+);
+const FacebookIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3V2z" stroke="#131820" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+function ProviderCard({ provider, isDesktop }) {
+  return (
+    <div style={{
+      backgroundColor: provider.color,
+      borderRadius: 24, padding: 24,
+      display: "flex", flexDirection: "column", gap: 24,
+      width: isDesktop ? 343 : 300, minWidth: isDesktop ? 343 : 300, flexShrink: 0,
+      boxSizing: "border-box",
+    }}>
+      {/* Header */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <h3 style={{
+          fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: isDesktop ? 24 : 20,
+          lineHeight: 1.4, color: "#131820", margin: 0,
+        }}>
+          {provider.name}
+        </h3>
+        <p style={{
+          fontFamily: T.font.body, fontWeight: 400, fontSize: 14, lineHeight: 1.4,
+          color: "#131820", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        }}>
+          {provider.address}
+        </p>
+      </div>
+      {/* Image */}
+      <div style={{
+        width: "100%", aspectRatio: "316/178", borderRadius: 24, overflow: "hidden",
+        backgroundColor: "#ddd",
+      }}>
+        <img src={provider.image} alt={provider.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
+      {/* Social icons */}
+      <div style={{ display: "flex", gap: 24 }}>
+        <GlobeIcon /><TikTokIcon /><InstagramIcon /><FacebookIcon />
+      </div>
+      {/* Description */}
+      <p style={{
+        fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 20 : 16, lineHeight: 1.6,
+        color: "#131820", margin: 0,
+      }}>
+        {provider.desc}
+      </p>
+    </div>
+  );
+}
+
+function BlogCard({ blog, isDesktop }) {
+  return (
+    <div style={{
+      backgroundColor: "#fff", border: "1px solid #fbfaf3", borderRadius: 24, padding: 24,
+      display: "flex", gap: isDesktop ? 33 : 20, alignItems: "flex-start",
+      width: "100%", boxSizing: "border-box",
+    }}>
+      {/* Image */}
+      <div style={{
+        width: isDesktop ? 180 : 100, height: isDesktop ? 180 : 100, borderRadius: 24, overflow: "hidden",
+        flexShrink: 0, backgroundColor: "#eee",
+      }}>
+        <img src={blog.image} alt={blog.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
+      {/* Content */}
+      <div style={{
+        flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between",
+        alignSelf: "stretch", minWidth: 0,
+      }}>
+        <p style={{
+          fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 20 : 16, lineHeight: 1.6,
+          color: "#333", margin: 0,
+        }}>
+          {blog.title}
+        </p>
+        <span style={{
+          fontFamily: T.font.body, fontWeight: 500, fontSize: 16, lineHeight: 1.2,
+          color: "#9260de", textDecoration: "underline", cursor: "pointer", marginTop: 16,
+        }}>
+          Read more
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function LandingPage({ onStart, onLogin }) {
+  const isDesktop = useIsDesktop();
+  const scrollRef = useRef(null);
+
+  const scrollProviders = (dir) => {
+    if (scrollRef.current) {
+      const amount = dir === "left" ? -375 : 375;
+      scrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
+    }
+  };
+
+  const px = isDesktop ? 160 : 20;
+
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column", alignItems: "center",
+      width: "100%", minHeight: "100vh", fontFamily: T.font.body,
+      backgroundColor: "#fff", position: "relative", overflow: "hidden",
+    }}>
+      {/* Font imports */}
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
+
+      {/* ---- NAV BAR ---- */}
+      <div style={{
+        width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+        padding: `24px ${px}px`, boxSizing: "border-box", backgroundColor: "#fff",
+        position: "sticky", top: 0, zIndex: 100,
+      }}>
+        <div style={{
+          width: "100%", maxWidth: 1120, display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          {/* Logo */}
+          <span style={{
+            fontFamily: T.font.heading, fontWeight: 700, fontSize: isDesktop ? 24 : 20,
+            color: T.color.primary, letterSpacing: 1, cursor: "pointer",
+          }}>
+            summa<span style={{ color: T.color.green, fontSize: 10, verticalAlign: "super" }}>{"\u25CF"}</span>
+          </span>
+          {/* Nav right */}
+          <div style={{ display: "flex", alignItems: "center", gap: isDesktop ? 32 : 16 }}>
+            <button onClick={onStart} style={{
+              background: "linear-gradient(90deg, #eafe7e, #d7ff77)", border: "none",
+              borderRadius: 24, padding: isDesktop ? "16px 32px" : "12px 20px", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
+              color: "#131820", whiteSpace: "nowrap",
+            }}>
+              Start with Summa
+            </button>
+            <button onClick={onLogin} style={{
+              background: "none", border: "none", cursor: "pointer", padding: isDesktop ? "24px 12px" : "12px 4px",
+              fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
+              color: "#000", textDecoration: "underline",
+            }}>
+              Login
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ---- HERO SECTION ---- */}
+      <div style={{
+        width: "100%", background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
+        padding: `${isDesktop ? 64 : 48}px ${px}px`, boxSizing: "border-box",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        position: "relative", overflow: "hidden",
+      }}>
+        {/* Hero background image overlay */}
+        <img
+          src="/summa-hero.png" alt="" aria-hidden="true"
+          style={{
+            position: "absolute", top: "50%", left: "50%",
+            transform: "translate(-50%, -40%)",
+            width: "110%", height: "auto", opacity: 0.08,
+            pointerEvents: "none", mixBlendMode: "darken",
+          }}
+        />
+        {/* Hero content */}
+        <div style={{
+          maxWidth: 960, width: "100%", display: "flex", flexDirection: "column",
+          alignItems: "center", gap: 32, position: "relative", zIndex: 1,
+          textAlign: "center",
+        }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+            <h1 style={{
+              fontFamily: "'Poppins', sans-serif", fontWeight: 800,
+              fontSize: isDesktop ? 48 : 32, lineHeight: 1.4,
+              color: "#131820", margin: 0,
+            }}>
+              The experiences that shape them, funded by the people who love them
+            </h1>
+            <p style={{
+              fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 20 : 16, lineHeight: 1.6,
+              color: "#131820", margin: 0, maxWidth: 640,
+            }}>
+              Summa makes it easy to set up a page, share it with your community, and turn your child&rsquo;s aspirations into achievements.
+            </p>
+          </div>
+          <button onClick={onStart} style={{
+            backgroundColor: "#fff", border: "none", borderRadius: 24,
+            padding: "16px 32px", cursor: "pointer",
+            fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
+            color: "#191919",
+          }}>
+            Start with Summa
+          </button>
+        </div>
+      </div>
+
+      {/* ---- PROVIDERS WE LOVE ---- */}
+      <div style={{
+        width: "100%", padding: `64px 0`, boxSizing: "border-box",
+      }}>
+        {/* Section header */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: `0 ${px}px`, maxWidth: 1440, margin: "0 auto", boxSizing: "border-box",
+        }}>
+          <h2 style={{
+            fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 24, lineHeight: 1.4,
+            color: "#131820", margin: 0,
+          }}>
+            Providers We Love
+          </h2>
+          {/* Carousel controls */}
+          <div style={{ display: "flex", gap: 32 }}>
+            <button onClick={() => scrollProviders("left")} style={{
+              width: 40, height: 40, borderRadius: 999, border: "none", cursor: "pointer",
+              background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 18, color: "#131820",
+            }}>
+              &#8249;
+            </button>
+            <button onClick={() => scrollProviders("right")} style={{
+              width: 40, height: 40, borderRadius: 999, border: "none", cursor: "pointer",
+              background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 18, color: "#131820",
+            }}>
+              &#8250;
+            </button>
+          </div>
+        </div>
+        {/* Subtitle */}
+        <p style={{
+          fontFamily: T.font.body, fontWeight: 400, fontSize: 18, lineHeight: 1.4,
+          color: "#131820", margin: 0, padding: `16px ${px}px 24px`,
+          maxWidth: 1440, boxSizing: "border-box",
+        }}>
+          Programs and activities trusted by parents just like you
+        </p>
+        {/* Scrollable row */}
+        <div
+          ref={scrollRef}
+          data-providers-scroll=""
+          style={{
+            display: "flex", gap: 32, overflowX: "auto", scrollBehavior: "smooth",
+            paddingLeft: px, paddingRight: px, paddingBottom: 8,
+            WebkitOverflowScrolling: "touch",
+            msOverflowStyle: "none", scrollbarWidth: "none",
+          }}
+        >
+          <style>{`[data-providers-scroll]::-webkit-scrollbar { display: none; }`}</style>
+          {PROVIDER_DATA.map((provider, i) => (
+            <ProviderCard key={i} provider={provider} isDesktop={isDesktop} />
+          ))}
+        </div>
+      </div>
+
+      {/* ---- FEATURED TOPICS ---- */}
+      <div style={{
+        width: "100%", padding: `64px ${px}px`, boxSizing: "border-box",
+        maxWidth: 1440, margin: "0 auto",
+      }}>
+        <h2 style={{
+          fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 24, lineHeight: 1.4,
+          color: "#131820", margin: "0 0 8px 0",
+        }}>
+          Featured Topics
+        </h2>
+        <p style={{
+          fontFamily: T.font.body, fontWeight: 400, fontSize: 18, lineHeight: 1.4,
+          color: "#131820", margin: "0 0 24px 0",
+        }}>
+          Read about insights from other guardians like you
+        </p>
+        {/* Blog grid */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: isDesktop ? "1fr 1fr" : "1fr",
+          gap: 32, width: "100%",
+        }}>
+          {BLOG_DATA.map((blog, i) => (
+            <BlogCard key={i} blog={blog} isDesktop={isDesktop} />
+          ))}
+        </div>
+      </div>
+
+      {/* ---- FOOTER ---- */}
+      <div style={{
+        width: "100%", padding: `64px ${px}px`, boxSizing: "border-box",
+        maxWidth: 1440, margin: "0 auto",
+      }}>
+        <div style={{
+          background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
+          borderRadius: 24, padding: 32,
+          display: "flex", flexDirection: isDesktop ? "row" : "column",
+          alignItems: isDesktop ? "center" : "flex-start",
+          justifyContent: "space-between", gap: isDesktop ? 0 : 32,
+          width: "100%", boxSizing: "border-box",
+        }}>
+          {/* Left: Links */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <a href="#" style={{
+              fontFamily: "'Syne', sans-serif", fontWeight: 400, fontSize: 16, lineHeight: 1.2,
+              color: "#131820", textDecoration: "underline",
+            }}>
+              Terms of Service
+            </a>
+            <a href="#" style={{
+              fontFamily: "'Syne', sans-serif", fontWeight: 400, fontSize: 16, lineHeight: 1.2,
+              color: "#131820", textDecoration: "underline",
+            }}>
+              Privacy Policy
+            </a>
+          </div>
+          {/* Center: Logo + copyright */}
+          <div style={{
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
+            order: isDesktop ? 0 : -1,
+          }}>
+            <span style={{
+              fontFamily: T.font.heading, fontWeight: 700, fontSize: 24,
+              color: T.color.primary, letterSpacing: 1,
+            }}>
+              summa<span style={{ color: T.color.green, fontSize: 10, verticalAlign: "super" }}>{"\u25CF"}</span>
+            </span>
+            <span style={{
+              fontFamily: T.font.body, fontWeight: 400, fontSize: 14, lineHeight: 1.4,
+              color: "#131820", textAlign: "center",
+            }}>
+              Summa &copy; 2026
+            </span>
+          </div>
+          {/* Right: Social icons */}
+          <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+            <TikTokIcon size={32} />
+            <InstagramIcon size={32} />
+            <FacebookIcon size={32} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // SCREEN: Start (Landing / Splash)
 // ============================================================
 const HERO_IMAGE = "/summa-hero.png";
@@ -5306,7 +5706,7 @@ export default function SummaFundSetup() {
         display: "flex", alignItems: "center", justifyContent: "center",
         flexDirection: "column", gap: 16, fontFamily: T.font.body,
       }}>
-        <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&family=Syne:wght@400&display=swap" rel="stylesheet" />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         <div style={{
           width: 40, height: 40, border: `3px solid ${T.color.neutral300}`,
@@ -5489,11 +5889,12 @@ export default function SummaFundSetup() {
   };
 
   if (showStart) {
-    return (
-      <div style={{ background: T.gradient.bg, minHeight: "100vh" }}>
-        <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
-        <style>{`input::placeholder, textarea::placeholder { color: ${T.color.neutral700} !important; opacity: 1; }`}</style>
-        {showSignUp ? (
+    // Sign up or sign in screens (shown over the landing page)
+    if (showSignUp) {
+      return (
+        <div style={{ background: T.gradient.bg, minHeight: "100vh" }}>
+          <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
+          <style>{`input::placeholder, textarea::placeholder { color: ${T.color.neutral700} !important; opacity: 1; }`}</style>
           <SignUpScreen
             onCreateAccount={async ({ firstName, lastName, email, password }) => {
               const { user, error } = await signUpUser({ email, password, firstName, lastName });
@@ -5509,7 +5910,14 @@ export default function SummaFundSetup() {
             }}
             onBack={() => setShowSignUp(false)}
           />
-        ) : showSignIn ? (
+        </div>
+      );
+    }
+    if (showSignIn) {
+      return (
+        <div style={{ background: T.gradient.bg, minHeight: "100vh" }}>
+          <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
+          <style>{`input::placeholder, textarea::placeholder { color: ${T.color.neutral700} !important; opacity: 1; }`}</style>
           <SignInScreen
             onSignIn={async ({ email, password }) => {
               const { user, error } = await signInUser({ email, password });
@@ -5517,7 +5925,6 @@ export default function SummaFundSetup() {
                 alert(typeof error === "string" ? error : error.message || "Sign in failed. Check your email and password.");
                 return;
               }
-              // Restore name from user metadata
               const meta = user?.user_metadata || {};
               setData(prev => ({
                 ...prev,
@@ -5533,20 +5940,29 @@ export default function SummaFundSetup() {
             }}
             onBack={() => setShowSignIn(false)}
           />
-        ) : (
-          <StartScreen
-            onSignUp={() => setShowSignUp(true)}
-            onSignIn={() => setShowSignIn(true)}
-            onJumpToLatest={() => { setShowStart(false); setScreen(12); }}
-          />
-        )}
-      </div>
+        </div>
+      );
+    }
+    // Default: show the marketing landing page
+    return (
+      <LandingPage
+        onStart={() => {
+          if (isSignedIn) {
+            // Already signed in — go directly to fund creation
+            setShowStart(false);
+            setScreen(0);
+          } else {
+            setShowSignUp(true);
+          }
+        }}
+        onLogin={() => setShowSignIn(true)}
+      />
     );
   }
 
   return (
     <div style={{ background: T.gradient.bg, minHeight: "100vh" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
         <style>{`input::placeholder, textarea::placeholder { color: ${T.color.neutral700} !important; opacity: 1; }`}</style>
       <div style={containerStyle}>
         {screens[screen]}
