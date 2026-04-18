@@ -5064,7 +5064,7 @@ function BlogCard({ blog, isDesktop }) {
   );
 }
 
-function LandingPage({ onStart, onLogin, onPrivacy }) {
+function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
   const isDesktop = useIsDesktop();
   const scrollRef = useRef(null);
 
@@ -5277,7 +5277,7 @@ function LandingPage({ onStart, onLogin, onPrivacy }) {
         }}>
           {/* Left: Links */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <a href="#" onClick={(e) => { e.preventDefault(); }} style={{
+            <a href="#" onClick={(e) => { e.preventDefault(); onTerms && onTerms(); }} style={{
               fontFamily: "'Syne', sans-serif", fontWeight: 400, fontSize: 16, lineHeight: 1.2,
               color: "#131820", textDecoration: "underline", cursor: "pointer",
             }}>
@@ -5411,7 +5411,7 @@ const PRIVACY_SECTIONS = [
   },
 ];
 
-function PrivacyPolicyPage({ onStart, onLogin, onBack }) {
+function PrivacyPolicyPage({ onStart, onLogin, onBack, onTerms }) {
   const isDesktop = useIsDesktop();
   const px = isDesktop ? 160 : 20;
 
@@ -5612,13 +5612,326 @@ function PrivacyPolicyPage({ onStart, onLogin, onBack }) {
           width: "100%", boxSizing: "border-box",
         }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <a href="#" onClick={(e) => { e.preventDefault(); }} style={{
+            <a href="#" onClick={(e) => { e.preventDefault(); onTerms && onTerms(); }} style={{
               fontFamily: "'Syne', sans-serif", fontWeight: 400, fontSize: 16, lineHeight: 1.2,
               color: "#131820", textDecoration: "underline", cursor: "pointer",
             }}>
               Terms of Service
             </a>
             <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{
+              fontFamily: "'Syne', sans-serif", fontWeight: 400, fontSize: 16, lineHeight: 1.2,
+              color: "#131820", textDecoration: "underline", cursor: "pointer",
+            }}>
+              Privacy Policy
+            </a>
+          </div>
+          <div style={{
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
+            order: isDesktop ? 0 : -1,
+          }}>
+            <span style={{
+              fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 32,
+              color: "#131820",
+            }}>
+              summa
+            </span>
+            <span style={{
+              fontFamily: T.font.body, fontWeight: 400, fontSize: 14, lineHeight: 1.4,
+              color: "#131820", textAlign: "center",
+            }}>
+              Summa &copy; 2026
+            </span>
+          </div>
+          <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+            <TikTokIcon size={32} />
+            <InstagramIcon size={32} />
+            <FacebookIcon size={32} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// PAGE: Terms of Use
+// ============================================================
+const TERMS_SECTIONS = [
+  {
+    title: "1. Who We Are",
+    paragraphs: [
+      "With Summa (\u201Cwe,\u201D \u201Cus,\u201D or \u201Cour\u201D) operates the Summa platform, which enables parents, guardians, and communities to crowdfund enrichment activities for children.",
+      "These Terms of Use (\u201CTerms\u201D) govern your access to and use of our website, mobile applications, and related services (collectively, the \u201CServices\u201D). By accessing or using any part of the Services, you agree to be bound by these Terms.",
+    ],
+  },
+  {
+    title: "2. Eligibility",
+    paragraphs: [
+      "You must be at least 18 years old to use the Services. By using the Services, you represent and warrant that you meet this age requirement and have the legal capacity to enter into a binding agreement.",
+    ],
+  },
+  {
+    title: "3. Account Registration",
+    paragraphs: [
+      "To access certain features, you must create an account. You agree to provide accurate, current, and complete information during registration and to keep your account information up to date.",
+    ],
+    subtitles: [
+      { subtitle: "Account Security", text: "You are responsible for maintaining the confidentiality of your login credentials and for all activities that occur under your account. Notify us immediately at hello@withsumma.com if you suspect unauthorized access." },
+      { subtitle: "Account Termination", text: "We reserve the right to suspend or terminate your account at any time for violation of these Terms, fraudulent activity, or any other reason at our discretion." },
+    ],
+  },
+  {
+    title: "4. Use of the Services",
+    paragraphs: [
+      "You agree to use the Services only for lawful purposes and in compliance with these Terms. You shall not:",
+    ],
+    bullets: [
+      "\u2022 Use the Services for any fraudulent, misleading, or deceptive purpose.",
+      "\u2022 Attempt to interfere with the security or proper functioning of the Services.",
+      "\u2022 Upload or share content that is harmful, offensive, or infringes on the rights of others.",
+      "\u2022 Impersonate any person or entity, or falsely represent your affiliation.",
+      "\u2022 Use the Services to solicit funds for purposes unrelated to children\u2019s enrichment activities.",
+    ],
+  },
+  {
+    title: "5. Fundraising and Payments",
+    paragraphs: [
+      "Summa facilitates crowdfunding campaigns for children\u2019s enrichment activities. By creating or contributing to a campaign, you agree to the following:",
+    ],
+    subtitles: [
+      { subtitle: "Campaign Organizers", text: "You are responsible for ensuring that all information in your campaign is accurate and truthful. Funds raised must be used for the stated purpose. Misuse of funds may result in account suspension and legal action." },
+      { subtitle: "Contributors", text: "Contributions are voluntary. We do not guarantee that funds will be used as described by the organizer. Refunds are subject to our Refund Policy." },
+      { subtitle: "Payment Processing", text: "Payments are processed through third-party payment providers. By making a payment, you agree to the terms and conditions of those providers. We are not responsible for errors or delays caused by payment processors." },
+    ],
+  },
+  {
+    title: "6. Intellectual Property",
+    paragraphs: [
+      "All content, trademarks, logos, and intellectual property displayed on the Services are owned by With Summa or our licensors. You may not copy, reproduce, distribute, or create derivative works without our prior written consent.",
+    ],
+    subtitles: [
+      { subtitle: "User Content", text: "By submitting content to the Services (e.g., campaign descriptions, images), you grant us a non-exclusive, worldwide, royalty-free license to use, display, and distribute your content in connection with the Services." },
+    ],
+  },
+  {
+    title: "7. Limitation of Liability",
+    paragraphs: [
+      "To the fullest extent permitted by law, With Summa and its officers, directors, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the Services.",
+      "Our total liability for any claims arising under these Terms shall not exceed the amount you paid to us, if any, in the 12 months preceding the claim.",
+    ],
+  },
+  {
+    title: "8. Dispute Resolution",
+    paragraphs: [
+      "Any disputes arising out of or relating to these Terms or the Services shall be resolved through binding arbitration in accordance with the rules of the American Arbitration Association (AAA), rather than in court.",
+    ],
+    subtitles: [
+      { subtitle: "Class Action Waiver", text: "You agree that any arbitration or proceeding shall be limited to the dispute between us individually. You waive any right to participate in a class action lawsuit or class-wide arbitration." },
+      { subtitle: "Governing Law", text: "These Terms shall be governed by and construed in accordance with the laws of the State of New York, without regard to its conflict of law principles." },
+    ],
+  },
+  {
+    title: "9. Changes to These Terms",
+    paragraphs: [
+      "We may update these Terms from time to time. If we make material changes, we will notify you by posting the updated Terms on our website and updating the \u201CEffective Date\u201D above. Your continued use of the Services after any changes constitutes your acceptance of the revised Terms.",
+    ],
+  },
+];
+
+function TermsOfUsePage({ onStart, onLogin, onBack, onPrivacy }) {
+  const isDesktop = useIsDesktop();
+  const px = isDesktop ? 160 : 20;
+
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column", alignItems: "center",
+      width: "100%", minHeight: "100vh", fontFamily: T.font.body,
+      backgroundColor: "#fff",
+    }}>
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&family=Syne:wght@400&display=swap" rel="stylesheet" />
+
+      {/* ---- NAV BAR ---- */}
+      <div style={{
+        width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+        padding: `24px ${px}px`, boxSizing: "border-box", backgroundColor: "#fff",
+        position: "sticky", top: 0, zIndex: 100,
+      }}>
+        <div style={{
+          width: "100%", maxWidth: 1120, display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <span onClick={onBack} style={{
+            fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: isDesktop ? 28 : 22,
+            color: "#131820", cursor: "pointer",
+          }}>
+            summa
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: isDesktop ? 32 : 16 }}>
+            <button onClick={onStart} style={{
+              background: "linear-gradient(90deg, #eafe7e, #d7ff77)", border: "none",
+              borderRadius: 24, padding: isDesktop ? "16px 32px" : "12px 20px", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
+              color: "#131820", whiteSpace: "nowrap",
+            }}>
+              Start with Summa
+            </button>
+            <button onClick={onLogin} style={{
+              background: "none", border: "none", cursor: "pointer", padding: isDesktop ? "24px 12px" : "12px 4px",
+              fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
+              color: "#000", textDecoration: "underline",
+            }}>
+              Login
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ---- HERO ---- */}
+      <div style={{
+        width: "100%", background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
+        padding: `${isDesktop ? 96 : 64}px ${px}px`, boxSizing: "border-box",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        textAlign: "center",
+      }}>
+        <div style={{ maxWidth: 960, width: "100%", display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+          <h1 style={{
+            fontFamily: "'Poppins', sans-serif", fontWeight: 800,
+            fontSize: isDesktop ? 48 : 32, lineHeight: 1.4,
+            color: "#131820", margin: 0,
+          }}>
+            Terms of Use
+          </h1>
+          <p style={{
+            fontFamily: T.font.body, fontWeight: 400, fontSize: 20, lineHeight: 1.6,
+            color: "#131820", margin: 0,
+          }}>
+            Effective Date: April 11, 2026
+          </p>
+        </div>
+      </div>
+
+      {/* ---- CONTENT ---- */}
+      <div style={{
+        width: "100%", maxWidth: isDesktop ? 800 : undefined,
+        padding: `64px ${isDesktop ? 0 : px}px`, boxSizing: "border-box",
+        display: "flex", flexDirection: "column", gap: 32,
+      }}>
+        {/* Intro */}
+        <p style={{
+          fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 20 : 16, lineHeight: 1.6,
+          color: "#333", margin: 0,
+        }}>
+          Welcome to Summa! These Terms of Use (&ldquo;Terms&rdquo;) govern your access to and use of our platform. By using our Services, you agree to these Terms. Please read them carefully.
+        </p>
+
+        {/* Arbitration Notice Card */}
+        <div style={{
+          backgroundColor: "#e7fd57", borderRadius: 24, padding: 32,
+          display: "flex", flexDirection: "column", gap: 16,
+        }}>
+          <h2 style={{
+            fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 24, lineHeight: 1.4,
+            color: "#131820", margin: 0,
+          }}>
+            Important Notice
+          </h2>
+          <p style={{
+            fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 18 : 16, lineHeight: 1.6,
+            color: "#131820", margin: 0,
+          }}>
+            These Terms contain a mandatory arbitration provision and class action waiver (see Section 8). By using our Services, you agree to resolve disputes through binding individual arbitration and waive your right to participate in class actions.
+          </p>
+        </div>
+
+        {/* Numbered Sections */}
+        {TERMS_SECTIONS.map((section, i) => (
+          <div key={i} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <h2 style={{
+              fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 24, lineHeight: 1.4,
+              color: "#131820", margin: 0,
+            }}>
+              {section.title}
+            </h2>
+            {(section.paragraphs || []).map((p, j) => (
+              <p key={j} style={{
+                fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 18 : 16, lineHeight: 1.6,
+                color: "#333", margin: 0,
+              }}>
+                {p}
+              </p>
+            ))}
+            {(section.bullets || []).map((b, j) => (
+              <p key={`b${j}`} style={{
+                fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 18 : 16, lineHeight: 1.6,
+                color: "#333", margin: 0, paddingLeft: 16,
+              }}>
+                {b}
+              </p>
+            ))}
+            {(section.subtitles || []).map((sub, j) => (
+              <div key={`s${j}`} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <h3 style={{
+                  fontFamily: T.font.body, fontWeight: 500, fontSize: isDesktop ? 18 : 16, lineHeight: 1.4,
+                  color: "#131820", margin: 0,
+                }}>
+                  {sub.subtitle}
+                </h3>
+                <p style={{
+                  fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 18 : 16, lineHeight: 1.6,
+                  color: "#333", margin: 0,
+                }}>
+                  {sub.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        ))}
+
+        {/* Contact Card */}
+        <div style={{
+          backgroundColor: "#ffa967", borderRadius: 24, padding: 32,
+          display: "flex", flexDirection: "column", gap: 12,
+        }}>
+          <h2 style={{
+            fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 24, lineHeight: 1.4,
+            color: "#131820", margin: 0,
+          }}>
+            Contact Us
+          </h2>
+          <div style={{
+            fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 18 : 16, lineHeight: 1.6,
+            color: "#131820",
+          }}>
+            <p style={{ margin: 0 }}>If you have any questions about these Terms, please contact us at:</p>
+            <br />
+            <p style={{ margin: 0 }}>With Summa</p>
+            <p style={{ margin: 0 }}>Email: hello@withsumma.com</p>
+            <br />
+            <p style={{ margin: 0 }}>We appreciate your trust in Summa and look forward to supporting your community.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ---- FOOTER ---- */}
+      <div style={{
+        width: "100%", padding: `64px ${px}px`, boxSizing: "border-box",
+        maxWidth: 1440, margin: "0 auto",
+      }}>
+        <div style={{
+          background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
+          borderRadius: 24, padding: 32,
+          display: "flex", flexDirection: isDesktop ? "row" : "column",
+          alignItems: isDesktop ? "center" : "flex-start",
+          justifyContent: "space-between", gap: isDesktop ? 0 : 32,
+          width: "100%", boxSizing: "border-box",
+        }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{
+              fontFamily: "'Syne', sans-serif", fontWeight: 400, fontSize: 16, lineHeight: 1.2,
+              color: "#131820", textDecoration: "underline", cursor: "pointer",
+            }}>
+              Terms of Service
+            </a>
+            <a href="#" onClick={(e) => { e.preventDefault(); onPrivacy && onPrivacy(); }} style={{
               fontFamily: "'Syne', sans-serif", fontWeight: 400, fontSize: 16, lineHeight: 1.2,
               color: "#131820", textDecoration: "underline", cursor: "pointer",
             }}>
@@ -5936,6 +6249,7 @@ export default function SummaFundSetup() {
   const [showSignUp, setShowSignUp] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [screen, setScreen] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -6292,6 +6606,26 @@ export default function SummaFundSetup() {
           }}
           onLogin={() => { setShowPrivacy(false); setShowSignIn(true); }}
           onBack={() => { setShowPrivacy(false); }}
+          onTerms={() => { setShowPrivacy(false); setShowTerms(true); window.scrollTo({ top: 0 }); }}
+        />
+      );
+    }
+    // Terms of Use page
+    if (showTerms) {
+      return (
+        <TermsOfUsePage
+          onStart={() => {
+            setShowTerms(false);
+            if (isSignedIn) {
+              setShowStart(false);
+              setScreen(0);
+            } else {
+              setShowSignUp(true);
+            }
+          }}
+          onLogin={() => { setShowTerms(false); setShowSignIn(true); }}
+          onBack={() => { setShowTerms(false); }}
+          onPrivacy={() => { setShowTerms(false); setShowPrivacy(true); window.scrollTo({ top: 0 }); }}
         />
       );
     }
@@ -6308,6 +6642,7 @@ export default function SummaFundSetup() {
         }}
         onLogin={() => setShowSignIn(true)}
         onPrivacy={() => { setShowPrivacy(true); window.scrollTo({ top: 0 }); }}
+        onTerms={() => { setShowTerms(true); window.scrollTo({ top: 0 }); }}
       />
     );
   }
