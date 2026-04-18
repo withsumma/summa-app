@@ -343,9 +343,12 @@ function InputField({ label, value, onChange, type = "text", multiline = false, 
 
 // --- Primary Button ---
 function ButtonPrimary({ text, onClick, disabled = false }) {
+  const isDesktop = useIsDesktop();
   return (
     <button onClick={onClick} disabled={disabled} style={{
-      width: "100%", maxWidth: 343, height: 60, borderRadius: T.radius.circle,
+      width: isDesktop ? "auto" : "100%", maxWidth: isDesktop ? undefined : 343,
+      height: 60, borderRadius: T.radius.circle,
+      padding: isDesktop ? "0 48px" : undefined,
       background: "linear-gradient(to right, #d6ff76, #eafe7e)",
       opacity: disabled ? 0.2 : 1,
       color: T.color.primary, border: "1px solid #191919", cursor: disabled ? "default" : "pointer",
@@ -4093,7 +4096,8 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn, refreshKey }) {
               goTo(0);
             }}
             style={{
-              width: "100%", height: 60, borderRadius: T.radius.circle,
+              width: isDesktop ? "auto" : "100%", height: 60, borderRadius: T.radius.circle,
+              padding: isDesktop ? "0 48px" : undefined,
               background: "linear-gradient(90deg, #d6ff76, #eafe7e)",
               border: "1px solid #191919", cursor: "pointer",
               fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
