@@ -343,7 +343,7 @@ async function notifyCreatorOfDonation({ fundId, donorName, amount }) {
   // For now, we call the edge function and pass the creator_id to look up the phone
   const { data: { session } } = await supabase.auth.getSession();
 
-  const response = await supabase.functions.invoke("notify-donation", {
+  const response = await supabase.functions.invoke("smooth-processor", {
     body: {
       donorName,
       amount,
@@ -353,7 +353,7 @@ async function notifyCreatorOfDonation({ fundId, donorName, amount }) {
   });
 
   if (response.error) {
-    console.warn("notify-donation error:", response.error);
+    console.warn("smooth-processor error:", response.error);
   }
 }
 
