@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-import { signUpUser, signInUser, getCurrentUser, signOutUser, createFund, updateFund, deleteFund, loadFundBySlug, loadFundsByCreator, getContributions, updateContributionStatus, recordContribution } from "./supabaseClient";
+import { signUpUser, signInUser, getCurrentUser, signOutUser, updateUserProfile, createFund, updateFund, deleteFund, loadFundBySlug, loadFundsByCreator, getContributions, updateContributionStatus, recordContribution } from "./supabaseClient";
 
 // ============================================================
 // DESIGN TOKENS
@@ -1899,6 +1899,69 @@ const AccountIcon = () => (
   </svg>
 );
 
+const CloseIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <line x1="6" y1="6" x2="18" y2="18" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round"/>
+    <line x1="18" y1="6" x2="6" y2="18" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+
+function HamburgerMenu({ isSignedIn, goTo, goHome, currentScreen }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div style={{ position: "relative" }}>
+      <button onClick={() => setOpen(!open)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Menu">
+        {open ? <CloseIcon /> : <MenuIcon />}
+      </button>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <div onClick={() => setOpen(false)} style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            zIndex: 998,
+          }} />
+          {/* Menu dropdown */}
+          <div style={{
+            position: "absolute", top: 36, right: 0, zIndex: 999,
+            backgroundColor: "#fff", borderRadius: 16,
+            boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+            border: `1px solid ${T.color.neutral500}`,
+            minWidth: 200, overflow: "hidden",
+            display: "flex", flexDirection: "column",
+          }}>
+            {isSignedIn && (
+              <button onClick={() => { setOpen(false); goTo(26); }} style={{
+                background: "none", border: "none", borderBottom: `1px solid ${T.color.neutral500}`,
+                padding: "16px 20px", cursor: "pointer", textAlign: "left",
+                fontFamily: T.font.body, fontSize: 15, fontWeight: 500, color: T.color.primary,
+              }}>
+                Edit Profile
+              </button>
+            )}
+            <button onClick={() => { setOpen(false); goHome(); }} style={{
+              background: "none", border: "none", borderBottom: `1px solid ${T.color.neutral500}`,
+              padding: "16px 20px", cursor: "pointer", textAlign: "left",
+              fontFamily: T.font.body, fontSize: 15, fontWeight: 500, color: T.color.primary,
+            }}>
+              Home
+            </button>
+            {isSignedIn && (
+              <button onClick={() => { setOpen(false); goTo(19); }} style={{
+                background: "none", border: "none",
+                padding: "16px 20px", cursor: "pointer", textAlign: "left",
+                fontFamily: T.font.body, fontSize: 15, fontWeight: 500, color: T.color.primary,
+              }}>
+                Dashboard
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function FundPage({ data, goTo, goHome, isSignedIn }) {
   const goalNum = Number(data.goal) || 0;
   const goalFormatted = `$${goalNum.toLocaleString()}`;
@@ -1931,9 +1994,7 @@ function FundPage({ data, goTo, goHome, isSignedIn }) {
         }}>
           summa
         </button>
-        <button onClick={() => alert("This feature is coming soon! We're working on the menu.")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Menu">
-          <MenuIcon />
-        </button>
+        <HamburgerMenu isSignedIn={isSignedIn} goTo={goTo} goHome={goHome} currentScreen={10} />
       </div>
 
       {/* Fund Details Section */}
@@ -4001,9 +4062,7 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn, refreshKey }) {
         }}>
           summa
         </button>
-        <button onClick={() => alert("This feature is coming soon! We're working on the menu.")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Menu">
-          <MenuIcon />
-        </button>
+        <HamburgerMenu isSignedIn={isSignedIn} goTo={goTo} goHome={goHome} currentScreen={19} />
       </div>
 
       {/* Body */}
@@ -5654,6 +5713,200 @@ function PrivacyPolicyPage({ onStart, onLogin, onBack, onTerms }) {
 }
 
 // ============================================================
+// SCREEN: Edit Profile — 26
+// ============================================================
+function EditProfileScreen({ data, onBack, onSave, onSignOut }) {
+  const isDesktop = useIsDesktop();
+  const [phone, setPhone] = useState(data.phone || "");
+  const [email, setEmail] = useState(data.email || "");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ") || "Your Account";
+
+  const hasChanges = (
+    email !== (data.email || "") ||
+    phone !== (data.phone || "") ||
+    newPassword !== ""
+  );
+
+  const passwordMismatch = newPassword && confirmPassword && newPassword !== confirmPassword;
+
+  const handleSave = async () => {
+    if (passwordMismatch) {
+      setErrorMsg("Passwords don't match.");
+      return;
+    }
+    setSaving(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    const updates = {};
+    if (email !== (data.email || "")) updates.email = email;
+    if (phone !== (data.phone || "")) updates.phone = phone;
+    if (newPassword) updates.password = newPassword;
+
+    const { user, error } = await onSave(updates);
+    setSaving(false);
+
+    if (error) {
+      setErrorMsg(typeof error === "string" ? error : error.message || "Failed to save. Please try again.");
+    } else {
+      setSuccessMsg(
+        updates.email && updates.email !== (data.email || "")
+          ? "Profile updated! Check your new email for a confirmation link."
+          : "Profile updated!"
+      );
+      setNewPassword("");
+      setConfirmPassword("");
+    }
+  };
+
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column", gap: 32,
+      width: "100%", maxWidth: isDesktop ? 420 : 375, minHeight: "100vh", margin: "0 auto",
+      padding: isDesktop ? "40px 48px 60px 48px" : "40px 16px 60px 16px", boxSizing: "border-box",
+      fontFamily: T.font.body,
+    }}>
+      {/* Back button */}
+      <div style={{ width: "100%", maxWidth: 343 }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }} aria-label="Go back">
+          <ArrowBackIcon />
+        </button>
+      </div>
+
+      {/* Heading */}
+      <div style={{ width: "100%", maxWidth: 343 }}>
+        <h1 style={{
+          fontFamily: T.font.heading, fontWeight: 500, fontSize: 28, lineHeight: 1.4,
+          color: T.color.primary, margin: 0,
+        }}>
+          Edit Profile
+        </h1>
+      </div>
+
+      {/* Name (read-only) */}
+      <div style={{ width: "100%", maxWidth: 343, display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style={{
+          fontFamily: T.font.body, fontSize: 13, fontWeight: 500, color: T.color.neutral700,
+        }}>
+          Name
+        </span>
+        <div style={{
+          width: "100%", height: 56, borderRadius: 12,
+          backgroundColor: T.color.neutral300, border: `1px solid ${T.color.neutral500}`,
+          display: "flex", alignItems: "center", padding: "0 16px", boxSizing: "border-box",
+          fontFamily: T.font.body, fontSize: 16, color: T.color.neutral700,
+          opacity: 0.7,
+        }}>
+          {fullName}
+        </div>
+        <span style={{
+          fontFamily: T.font.body, fontSize: 12, fontWeight: 400, color: T.color.neutral700,
+          paddingLeft: 4, fontStyle: "italic",
+        }}>
+          Name cannot be changed for security purposes.
+        </span>
+      </div>
+
+      {/* Editable fields */}
+      <InputField label="Email" value={email} onChange={setEmail} type="email" />
+      <div style={{ width: "100%", maxWidth: 343, display: "flex", flexDirection: "column", gap: 8 }}>
+        <InputField label="Phone number (optional)" value={phone} onChange={setPhone} type="tel" />
+        <span style={{
+          fontFamily: T.font.body, fontSize: 13, fontWeight: 400, lineHeight: 1.4,
+          color: T.color.neutral700, paddingLeft: 4,
+        }}>
+          Add your number to get text notifications when you receive a donation.
+        </span>
+      </div>
+
+      {/* Password section */}
+      <div style={{
+        width: "100%", maxWidth: 343, display: "flex", flexDirection: "column", gap: 4,
+        borderTop: `1px solid ${T.color.neutral500}`, paddingTop: 24,
+      }}>
+        <span style={{
+          fontFamily: T.font.body, fontSize: 14, fontWeight: 500, color: T.color.primary,
+          marginBottom: 12,
+        }}>
+          Change Password
+        </span>
+        <InputField label="New password" value={newPassword} onChange={setNewPassword} type="password" />
+        <div style={{ height: 16 }} />
+        <InputField label="Confirm new password" value={confirmPassword} onChange={(v) => { setConfirmPassword(v); setErrorMsg(""); }} type="password" />
+        {passwordMismatch && (
+          <span style={{
+            fontFamily: T.font.body, fontSize: 13, color: "#e74c3c", paddingLeft: 4, marginTop: 4,
+          }}>
+            Passwords don&rsquo;t match.
+          </span>
+        )}
+      </div>
+
+      {/* Status messages */}
+      {errorMsg && (
+        <div style={{
+          width: "100%", maxWidth: 343, padding: "12px 16px", boxSizing: "border-box",
+          borderRadius: 12, backgroundColor: "#ffeaea",
+          fontFamily: T.font.body, fontSize: 14, color: "#c0392b", lineHeight: 1.4,
+        }}>
+          {errorMsg}
+        </div>
+      )}
+      {successMsg && (
+        <div style={{
+          width: "100%", maxWidth: 343, padding: "12px 16px", boxSizing: "border-box",
+          borderRadius: 12, backgroundColor: "#eaffea",
+          fontFamily: T.font.body, fontSize: 14, color: "#27ae60", lineHeight: 1.4,
+        }}>
+          {successMsg}
+        </div>
+      )}
+
+      {/* Save button */}
+      <div style={{ width: "100%", maxWidth: 343, margin: "0 auto" }}>
+        <button
+          onClick={handleSave}
+          disabled={!hasChanges || saving || passwordMismatch}
+          style={{
+            width: "100%", height: 60, borderRadius: T.radius.circle,
+            background: hasChanges && !saving && !passwordMismatch
+              ? "linear-gradient(90deg, #d6ff76, #eafe7e)"
+              : T.color.neutral300,
+            border: hasChanges && !saving && !passwordMismatch ? "1px solid #191919" : "none",
+            cursor: hasChanges && !saving && !passwordMismatch ? "pointer" : "default",
+            fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
+            color: T.color.primary, opacity: hasChanges && !saving && !passwordMismatch ? 1 : 0.5,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          {saving ? "Saving..." : "Save Changes"}
+        </button>
+      </div>
+
+      {/* Sign out button */}
+      <div style={{ width: "100%", maxWidth: 343, margin: "0 auto", display: "flex", justifyContent: "center" }}>
+        <button
+          onClick={onSignOut}
+          style={{
+            background: "none", border: "none", cursor: "pointer", padding: "12px",
+            fontFamily: T.font.body, fontSize: 14, fontWeight: 500,
+            color: "#e74c3c", textDecoration: "underline",
+          }}
+        >
+          Sign Out
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // PAGE: Terms of Use
 // ============================================================
 const TERMS_SECTIONS = [
@@ -6281,6 +6534,7 @@ export default function SummaFundSetup() {
   const [animating, setAnimating] = useState(false);
   const [returnTo, setReturnTo] = useState(null); // screen index to return to after editing
   const [editingBlockId, setEditingBlockId] = useState(null); // content block ID being edited
+  const [prevScreen, setPrevScreen] = useState(null); // track previous screen for back navigation
   const [fundsRefreshKey, setFundsRefreshKey] = useState(0); // increment to re-fetch funds on dashboard
 
   // ---- SESSION PERSISTENCE ----
@@ -6294,6 +6548,7 @@ export default function SummaFundSetup() {
           firstName: meta.first_name || prev.firstName || "",
           lastName: meta.last_name || prev.lastName || "",
           email: user.email || prev.email || "",
+          phone: meta.phone || "",
           userId: user.id,
         }));
         setIsSignedIn(true);
@@ -6381,6 +6636,7 @@ export default function SummaFundSetup() {
   const goTo = (nextScreen, dir = "right") => {
     setSlideDir(dir);
     setAnimating(true);
+    setPrevScreen(screen);
     setTimeout(() => {
       setScreen(nextScreen);
       setAnimating(false);
@@ -6494,6 +6750,7 @@ export default function SummaFundSetup() {
           email,
           firstName: meta.first_name || prev.firstName || "",
           lastName: meta.last_name || prev.lastName || "",
+          phone: meta.phone || "",
           userId: user?.id,
         }));
         setIsSignedIn(true);
@@ -6503,6 +6760,33 @@ export default function SummaFundSetup() {
     />,
     23: <AddToPage data={data} setData={setData} onBack={() => goTo(returnTo || 8, "left")} />,
     24: <EditContentBlock data={data} setData={setData} blockId={editingBlockId} onBack={() => { const ret = returnTo || 8; setEditingBlockId(null); goTo(ret, "left"); }} />,
+    26: <EditProfileScreen
+      data={data}
+      onBack={() => goTo(prevScreen || 19, "left")}
+      onSave={async (updates) => {
+        const { user, error } = await updateUserProfile(updates);
+        if (!error && user) {
+          const meta = user.user_metadata || {};
+          setData(prev => ({
+            ...prev,
+            email: user.email || prev.email,
+            phone: meta.phone || "",
+          }));
+        }
+        return { user, error };
+      }}
+      onSignOut={async () => {
+        await signOutUser();
+        setIsSignedIn(false);
+        setShowStart(true);
+        setData(prev => ({
+          fundFor: null, firstName: "", lastName: "",
+          recipientName: "", title: "", description: "", goal: "", targetDate: "",
+          paymentHandles: {}, coverImage: null, coverImagePosition: { x: 50, y: 50 },
+          contentBlocks: [], email: "", userId: null,
+        }));
+      }}
+    />,
     25: <EditSummaFund
       data={data} setData={setData}
       onBack={() => goTo(20, "left")}
@@ -6589,6 +6873,7 @@ export default function SummaFundSetup() {
                 email,
                 firstName: meta.first_name || prev.firstName || "",
                 lastName: meta.last_name || prev.lastName || "",
+                phone: meta.phone || "",
                 userId: user?.id,
               }));
               setIsSignedIn(true);

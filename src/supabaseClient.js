@@ -77,6 +77,40 @@ export async function getCurrentUser() {
 
 
 // ============================================================
+// AUTH: Update user profile (email, password, phone in metadata)
+// Only updates fields that are provided (non-undefined)
+// Returns { user, error }
+// ============================================================
+export async function updateUserProfile({ email, password, phone }) {
+  if (!supabase) return { user: null, error: "Supabase not configured" };
+
+  const updates = {};
+
+  // Email change (Supabase sends a confirmation email)
+  if (email !== undefined) {
+    updates.email = email;
+  }
+
+  // Password change
+  if (password !== undefined && password !== "") {
+    updates.password = password;
+  }
+
+  // Phone is stored in user_metadata
+  if (phone !== undefined) {
+    updates.data = { phone: phone || null };
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return { user: null, error: "No changes provided" };
+  }
+
+  const { data, error } = await supabase.auth.updateUser(updates);
+  return { user: data?.user || null, error };
+}
+
+
+// ============================================================
 // AUTH: Sign out
 // ============================================================
 export async function signOutUser() {
