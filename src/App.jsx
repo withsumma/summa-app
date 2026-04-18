@@ -5719,6 +5719,7 @@ function EditProfileScreen({ data, onBack, onSave, onSignOut }) {
   const isDesktop = useIsDesktop();
   const [phone, setPhone] = useState(data.phone || "");
   const [email, setEmail] = useState(data.email || "");
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
@@ -5730,7 +5731,7 @@ function EditProfileScreen({ data, onBack, onSave, onSignOut }) {
   const hasChanges = (
     email !== (data.email || "") ||
     phone !== (data.phone || "") ||
-    newPassword !== ""
+    (showPasswordFields && newPassword !== "" && confirmPassword !== "")
   );
 
   const passwordMismatch = newPassword && confirmPassword && newPassword !== confirmPassword;
@@ -5747,7 +5748,7 @@ function EditProfileScreen({ data, onBack, onSave, onSignOut }) {
     const updates = {};
     if (email !== (data.email || "")) updates.email = email;
     if (phone !== (data.phone || "")) updates.phone = phone;
-    if (newPassword) updates.password = newPassword;
+    if (showPasswordFields && newPassword) updates.password = newPassword;
 
     const { user, error } = await onSave(updates);
     setSaving(false);
@@ -5830,21 +5831,47 @@ function EditProfileScreen({ data, onBack, onSave, onSignOut }) {
         width: "100%", maxWidth: 343, display: "flex", flexDirection: "column", gap: 4,
         borderTop: `1px solid ${T.color.neutral500}`, paddingTop: 24,
       }}>
-        <span style={{
-          fontFamily: T.font.body, fontSize: 14, fontWeight: 500, color: T.color.primary,
-          marginBottom: 12,
-        }}>
-          Change Password
-        </span>
-        <InputField label="New password" value={newPassword} onChange={setNewPassword} type="password" />
-        <div style={{ height: 16 }} />
-        <InputField label="Confirm new password" value={confirmPassword} onChange={(v) => { setConfirmPassword(v); setErrorMsg(""); }} type="password" />
-        {passwordMismatch && (
-          <span style={{
-            fontFamily: T.font.body, fontSize: 13, color: "#e74c3c", paddingLeft: 4, marginTop: 4,
-          }}>
-            Passwords don&rsquo;t match.
-          </span>
+        {!showPasswordFields ? (
+          <button
+            onClick={() => setShowPasswordFields(true)}
+            style={{
+              background: "none", border: "none", cursor: "pointer", padding: 0,
+              fontFamily: T.font.body, fontSize: 14, fontWeight: 500, color: T.color.primary,
+              textDecoration: "underline", textAlign: "left",
+            }}
+          >
+            Change Password
+          </button>
+        ) : (
+          <>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <span style={{
+                fontFamily: T.font.body, fontSize: 14, fontWeight: 500, color: T.color.primary,
+              }}>
+                Change Password
+              </span>
+              <button
+                onClick={() => { setShowPasswordFields(false); setNewPassword(""); setConfirmPassword(""); setErrorMsg(""); }}
+                style={{
+                  background: "none", border: "none", cursor: "pointer", padding: 0,
+                  fontFamily: T.font.body, fontSize: 13, fontWeight: 400, color: T.color.neutral700,
+                  textDecoration: "underline",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+            <InputField label="New password" value={newPassword} onChange={setNewPassword} type="password" />
+            <div style={{ height: 16 }} />
+            <InputField label="Confirm new password" value={confirmPassword} onChange={(v) => { setConfirmPassword(v); setErrorMsg(""); }} type="password" />
+            {passwordMismatch && (
+              <span style={{
+                fontFamily: T.font.body, fontSize: 13, color: "#e74c3c", paddingLeft: 4, marginTop: 4,
+              }}>
+                Passwords don&rsquo;t match.
+              </span>
+            )}
+          </>
         )}
       </div>
 
