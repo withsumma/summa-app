@@ -5176,11 +5176,12 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
               Start with Summa
             </button>
             <button onClick={onLogin} style={{
-              background: "none", border: "none", cursor: "pointer", padding: isDesktop ? "24px 12px" : "12px 4px",
+              backgroundColor: "#fbfaf3", border: "none", borderRadius: 16,
+              cursor: "pointer", padding: isDesktop ? 24 : "12px 16px",
               fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
-              color: "#000", textDecoration: "underline",
+              color: "#000", whiteSpace: "nowrap",
             }}>
-              Login
+              Log in
             </button>
           </div>
         </div>
@@ -5511,11 +5512,12 @@ function PrivacyPolicyPage({ onStart, onLogin, onBack, onTerms }) {
               Start with Summa
             </button>
             <button onClick={onLogin} style={{
-              background: "none", border: "none", cursor: "pointer", padding: isDesktop ? "24px 12px" : "12px 4px",
+              backgroundColor: "#fbfaf3", border: "none", borderRadius: 16,
+              cursor: "pointer", padding: isDesktop ? 24 : "12px 16px",
               fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
-              color: "#000", textDecoration: "underline",
+              color: "#000", whiteSpace: "nowrap",
             }}>
-              Login
+              Log in
             </button>
           </div>
         </div>
@@ -6059,11 +6061,12 @@ function TermsOfUsePage({ onStart, onLogin, onBack, onPrivacy }) {
               Start with Summa
             </button>
             <button onClick={onLogin} style={{
-              background: "none", border: "none", cursor: "pointer", padding: isDesktop ? "24px 12px" : "12px 4px",
+              backgroundColor: "#fbfaf3", border: "none", borderRadius: 16,
+              cursor: "pointer", padding: isDesktop ? 24 : "12px 16px",
               fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
-              color: "#000", textDecoration: "underline",
+              color: "#000", whiteSpace: "nowrap",
             }}>
-              Login
+              Log in
             </button>
           </div>
         </div>
