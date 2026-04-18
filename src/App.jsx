@@ -4997,12 +4997,6 @@ const LANDING_IMAGES = {
     whyHateMath: "https://www.figma.com/api/mcp/asset/ef6efa65-f1dc-49e0-bd87-cffb99867095",
     binnsMartial: "https://www.figma.com/api/mcp/asset/8c6f9f31-2485-4fae-9450-95700e95542d",
   },
-  blog: {
-    community: "https://www.figma.com/api/mcp/asset/6b20bab9-d966-49d5-ad86-adbcc14aae3c",
-    crowdfunding: "https://www.figma.com/api/mcp/asset/cddc2900-3986-454e-8619-46fca7da3a71",
-    extracurricular: "https://www.figma.com/api/mcp/asset/93278ec4-66d1-4999-b4b2-859f9adfcfc0",
-    findingFit: "https://www.figma.com/api/mcp/asset/b023edaf-4af3-40c8-88a4-dbac0ad9085d",
-  },
 };
 
 const PROVIDER_DATA = [
@@ -5013,11 +5007,23 @@ const PROVIDER_DATA = [
   { name: "Binns Victory Martial Arts", address: "Flatbush, Brooklyn 11203", color: "#ffa967", image: LANDING_IMAGES.providers.binnsMartial, desc: "A family-owned karate dojo in Flatbush, Brooklyn, offering classes for ages 2\u201317+. Discounted intro sessions and free Baby Cubs trials (ages 2\u20134) available." },
 ];
 
-const BLOG_DATA = [
-  { title: "Community Matters: How Local Programs and Support Build Stronger Families", image: LANDING_IMAGES.blog.community },
-  { title: "Overcoming Financial Barriers: How Crowdfunding Can Support Your Child\u2019s Passions", image: LANDING_IMAGES.blog.crowdfunding },
-  { title: "Unlocking Potential: How Extracurricular Activities Boost Confidence and Skills in Kids", image: LANDING_IMAGES.blog.extracurricular },
-  { title: "Finding the Right Fit: Tips for Choosing Extracurricular Programs Your Child Will Love", image: LANDING_IMAGES.blog.findingFit },
+const FAQ_DATA = [
+  {
+    question: "What makes Summa special?",
+    answer: "Most fundraising platforms are built around need. Summa is built around joy — helping guardians fund the activities, programs, and experiences that let their kids thrive. Whether it's dance class, summer camp, or a robotics club, Summa makes it easy to rally your community around what matters most.",
+  },
+  {
+    question: "Does Summa process payments?",
+    answer: "No. Summa does not process or hold any money. Instead, it helps you share your payment details — like Venmo, Zelle, or PayPal — so supporters can send contributions directly to you through the platform they already trust.",
+  },
+  {
+    question: "Does Summa cost money?",
+    answer: "Nope — Summa is completely free.",
+  },
+  {
+    question: "Do I need an account to contribute to someone's fund?",
+    answer: "No, you don't need to sign up to give. Simply visit a fund page, choose your preferred payment method, and send your contribution directly to the guardian.",
+  },
 ];
 
 // Social icon SVGs for provider cards and footer
@@ -5091,38 +5097,43 @@ function ProviderCard({ provider, isDesktop }) {
   );
 }
 
-function BlogCard({ blog, isDesktop }) {
+function AccordionItem({ question, answer }) {
+  const [open, setOpen] = useState(false);
+  const isDesktop = useIsDesktop();
   return (
     <div style={{
-      backgroundColor: "#fff", border: "1px solid #fbfaf3", borderRadius: 24, padding: 24,
-      display: "flex", gap: isDesktop ? 33 : 20, alignItems: "flex-start",
-      width: "100%", boxSizing: "border-box",
+      backgroundColor: "#fff", border: "1px solid #fbfaf3", borderRadius: 24,
+      padding: isDesktop ? 32 : 24, width: "100%", boxSizing: "border-box",
     }}>
-      {/* Image */}
-      <div style={{
-        width: isDesktop ? 180 : 100, height: isDesktop ? 180 : 100, borderRadius: 24, overflow: "hidden",
-        flexShrink: 0, backgroundColor: "#eee",
-      }}>
-        <img src={blog.image} alt={blog.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-      </div>
-      {/* Content */}
-      <div style={{
-        flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between",
-        alignSelf: "stretch", minWidth: 0,
-      }}>
-        <p style={{
-          fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 20 : 16, lineHeight: 1.6,
-          color: "#333", margin: 0,
-        }}>
-          {blog.title}
-        </p>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          background: "none", border: "none", cursor: "pointer", padding: 0,
+          width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 16, textAlign: "left",
+        }}
+      >
         <span style={{
-          fontFamily: T.font.body, fontWeight: 500, fontSize: 16, lineHeight: 1.2,
-          color: "#9260de", textDecoration: "underline", cursor: "pointer", marginTop: 16,
+          fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: isDesktop ? 20 : 18,
+          lineHeight: 1.4, color: "#131820", flex: 1,
         }}>
-          Read more
+          {question}
         </span>
-      </div>
+        <svg
+          width={isDesktop ? 48 : 32} height={isDesktop ? 48 : 32} viewBox="0 0 48 48" fill="none"
+          style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.25s ease" }}
+        >
+          <path d="M14 20L24 30L34 20" stroke="#131820" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {open && (
+        <p style={{
+          fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 20 : 16,
+          lineHeight: 1.6, color: "#131820", margin: "16px 0 0 0",
+        }}>
+          {answer}
+        </p>
+      )}
     </div>
   );
 }
@@ -5297,31 +5308,20 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
         </div>
       </div>
 
-      {/* ---- FEATURED TOPICS ---- */}
+      {/* ---- FAQ ---- */}
       <div style={{
         width: "100%", padding: `64px ${px}px`, boxSizing: "border-box",
         maxWidth: 1440, margin: "0 auto",
       }}>
         <h2 style={{
-          fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 24, lineHeight: 1.4,
-          color: "#131820", margin: "0 0 8px 0",
-        }}>
-          Featured Topics
-        </h2>
-        <p style={{
-          fontFamily: T.font.body, fontWeight: 400, fontSize: 18, lineHeight: 1.4,
+          fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: isDesktop ? 32 : 24, lineHeight: 1.4,
           color: "#131820", margin: "0 0 24px 0",
         }}>
-          Read about insights from other guardians like you
-        </p>
-        {/* Blog grid */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: isDesktop ? "1fr 1fr" : "1fr",
-          gap: 32, width: "100%",
-        }}>
-          {BLOG_DATA.map((blog, i) => (
-            <BlogCard key={i} blog={blog} isDesktop={isDesktop} />
+          Have questions?
+        </h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
+          {FAQ_DATA.map((faq, i) => (
+            <AccordionItem key={i} question={faq.question} answer={faq.answer} />
           ))}
         </div>
       </div>
