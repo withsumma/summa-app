@@ -15,7 +15,7 @@ const T = {
     neutral700: "#606763",
   },
   font: {
-    heading: "'Rubik', sans-serif",
+    heading: "'Poppins', sans-serif",
     body: "'Rubik', sans-serif",
   },
   radius: { circle: 999, card: 16, input: 8 },
@@ -348,7 +348,7 @@ function ButtonPrimary({ text, onClick, disabled = false }) {
       width: "100%", maxWidth: 343, height: 60, borderRadius: T.radius.circle,
       background: "linear-gradient(to right, #d6ff76, #eafe7e)",
       opacity: disabled ? 0.2 : 1,
-      color: T.color.primary, border: "none", cursor: disabled ? "default" : "pointer",
+      color: T.color.primary, border: "1px solid #191919", cursor: disabled ? "default" : "pointer",
       fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
       display: "flex", alignItems: "center", justifyContent: "center",
       transition: "opacity 0.2s ease",
@@ -2594,7 +2594,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
           )}
           {isDesktop ? (
             <button onClick={isSignedIn ? () => goTo(0) : () => goTo(22)} style={{
-              backgroundColor: "#e7fd57", border: "none", borderRadius: T.radius.circle,
+              backgroundColor: "#e7fd57", border: "1px solid #191919", borderRadius: T.radius.circle,
               padding: "10px 20px", cursor: "pointer",
               fontFamily: T.font.body, fontSize: 14, fontWeight: 600, color: T.color.primary,
               whiteSpace: "nowrap",
@@ -4095,7 +4095,7 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn, refreshKey }) {
             style={{
               width: "100%", height: 60, borderRadius: T.radius.circle,
               background: "linear-gradient(90deg, #d6ff76, #eafe7e)",
-              border: "none", cursor: "pointer",
+              border: "1px solid #191919", cursor: "pointer",
               fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
               color: T.color.primary,
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -5143,7 +5143,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
       backgroundColor: "#fff", position: "relative", overflow: "hidden",
     }}>
       {/* Font imports */}
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
 
       {/* ---- NAV BAR ---- */}
       <div style={{
@@ -5164,7 +5164,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
           {/* Nav right */}
           <div style={{ display: "flex", alignItems: "center", gap: isDesktop ? 32 : 16 }}>
             <button onClick={onStart} style={{
-              background: "linear-gradient(90deg, #eafe7e, #d7ff77)", border: "none",
+              background: "linear-gradient(90deg, #eafe7e, #d7ff77)", border: "1px solid #191919",
               borderRadius: 24, padding: isDesktop ? "16px 32px" : "12px 20px", cursor: "pointer",
               fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
               color: "#131820", whiteSpace: "nowrap",
@@ -5221,7 +5221,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
             </p>
           </div>
           <button onClick={onStart} style={{
-            backgroundColor: "#fff", border: "none", borderRadius: 24,
+            backgroundColor: "#fff", border: "1px solid #191919", borderRadius: 24,
             padding: "16px 32px", cursor: "pointer",
             fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
             color: "#191919",
@@ -5480,7 +5480,7 @@ function PrivacyPolicyPage({ onStart, onLogin, onBack, onTerms }) {
       width: "100%", minHeight: "100vh", fontFamily: T.font.body,
       backgroundColor: "#fff",
     }}>
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&family=Syne:wght@400&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&family=Rubik:wght@400;500;700&family=Syne:wght@400&display=swap" rel="stylesheet" />
 
       {/* ---- NAV BAR ---- */}
       <div style={{
@@ -5499,7 +5499,7 @@ function PrivacyPolicyPage({ onStart, onLogin, onBack, onTerms }) {
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: isDesktop ? 32 : 16 }}>
             <button onClick={onStart} style={{
-              background: "linear-gradient(90deg, #eafe7e, #d7ff77)", border: "none",
+              background: "linear-gradient(90deg, #eafe7e, #d7ff77)", border: "1px solid #191919",
               borderRadius: 24, padding: isDesktop ? "16px 32px" : "12px 20px", cursor: "pointer",
               fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
               color: "#131820", whiteSpace: "nowrap",
@@ -6028,7 +6028,7 @@ function TermsOfUsePage({ onStart, onLogin, onBack, onPrivacy }) {
       width: "100%", minHeight: "100vh", fontFamily: T.font.body,
       backgroundColor: "#fff",
     }}>
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&family=Syne:wght@400&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&family=Rubik:wght@400;500;700&family=Syne:wght@400&display=swap" rel="stylesheet" />
 
       {/* ---- NAV BAR ---- */}
       <div style={{
@@ -6047,7 +6047,7 @@ function TermsOfUsePage({ onStart, onLogin, onBack, onPrivacy }) {
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: isDesktop ? 32 : 16 }}>
             <button onClick={onStart} style={{
-              background: "linear-gradient(90deg, #eafe7e, #d7ff77)", border: "none",
+              background: "linear-gradient(90deg, #eafe7e, #d7ff77)", border: "1px solid #191919",
               borderRadius: 24, padding: isDesktop ? "16px 32px" : "12px 20px", cursor: "pointer",
               fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
               color: "#131820", whiteSpace: "nowrap",
@@ -6328,7 +6328,7 @@ function StartScreen({ onSignUp, onSignIn, onJumpToLatest }) {
           <button onClick={onSignUp} style={{
             width: "100%", height: 60, borderRadius: T.radius.circle,
             background: "linear-gradient(90deg, #d6ff76, #eafe7e)",
-            border: "none", cursor: "pointer",
+            border: "1px solid #191919", cursor: "pointer",
             fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
             color: T.color.primary,
             display: "flex", alignItems: "center", justifyContent: "center",
@@ -6646,7 +6646,7 @@ export default function SummaFundSetup() {
         display: "flex", alignItems: "center", justifyContent: "center",
         flexDirection: "column", gap: 16, fontFamily: T.font.body,
       }}>
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&family=Syne:wght@400&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&family=Rubik:wght@400;500;700&family=Syne:wght@400&display=swap" rel="stylesheet" />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         <div style={{
           width: 40, height: 40, border: `3px solid ${T.color.neutral300}`,
@@ -6862,7 +6862,7 @@ export default function SummaFundSetup() {
     if (showSignUp) {
       return (
         <div style={{ background: T.gradient.bg, minHeight: "100vh" }}>
-          <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
+          <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
           <style>{`input::placeholder, textarea::placeholder { color: ${T.color.neutral700} !important; opacity: 1; }`}</style>
           <SignUpScreen
             onCreateAccount={async ({ firstName, lastName, email, password, phone }) => {
@@ -6885,7 +6885,7 @@ export default function SummaFundSetup() {
     if (showSignIn) {
       return (
         <div style={{ background: T.gradient.bg, minHeight: "100vh" }}>
-          <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
+          <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
           <style>{`input::placeholder, textarea::placeholder { color: ${T.color.neutral700} !important; opacity: 1; }`}</style>
           <SignInScreen
             onSignIn={async ({ email, password }) => {
@@ -6971,7 +6971,7 @@ export default function SummaFundSetup() {
 
   return (
     <div style={{ background: T.gradient.bg, minHeight: "100vh" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
         <style>{`input::placeholder, textarea::placeholder { color: ${T.color.neutral700} !important; opacity: 1; }`}</style>
       <div style={containerStyle}>
         {screens[screen]}
