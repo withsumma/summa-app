@@ -5160,15 +5160,18 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
       {/* Font imports */}
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
 
-      {/* Subtle background texture overlay */}
-      <img
-        src="/summa-hero.png" alt="" aria-hidden="true"
-        style={{
-          position: "absolute", top: 0, left: 0,
-          width: "100%", height: "100%", objectFit: "cover",
-          opacity: 0.05, pointerEvents: "none", zIndex: 0,
-        }}
-      />
+      {/* Subtle multi-color gradient background */}
+      <div aria-hidden="true" style={{
+        position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
+        pointerEvents: "none", zIndex: 0,
+        background: [
+          "radial-gradient(ellipse 80% 50% at 10% 10%, rgba(200,230,255,0.35) 0%, transparent 60%)",
+          "radial-gradient(ellipse 60% 40% at 0% 30%, rgba(230,250,140,0.2) 0%, transparent 50%)",
+          "radial-gradient(ellipse 70% 50% at 5% 60%, rgba(240,180,210,0.25) 0%, transparent 55%)",
+          "radial-gradient(ellipse 60% 40% at 90% 80%, rgba(200,220,255,0.2) 0%, transparent 50%)",
+          "radial-gradient(ellipse 50% 30% at 50% 45%, rgba(220,210,240,0.12) 0%, transparent 50%)",
+        ].join(", "),
+      }} />
 
       {/* ---- FLOATING NAV BAR ---- */}
       <div style={{
