@@ -5000,21 +5000,21 @@ const LANDING_IMAGES = {
 };
 
 const PROVIDER_DATA = [
-  { name: "NY Society of Play", address: "724 Manhattan Ave, Brooklyn, NY 11222", color: "#62c6ff", image: LANDING_IMAGES.providers.nySociety, desc: "A unique space for kids 6+ to enjoy board games, role-playing, and storytelling. Offers after-school, weekend, and break programs in a cozy setting." },
-  { name: "Devore Dance", address: "Flatbush, Brooklyn 11203", color: "#ff7cb4", image: LANDING_IMAGES.providers.devoreDance, desc: "A beloved dance studio in Hollis, Queens serving local families for generations. Saturday classes for ages 4+ take place in a dedicated studio space that encourages creativity and growth." },
-  { name: "Bricks4Kids", address: "114-02 Guy R Brewer Blvd Suite 224, Rochdale, NY 11434", color: "#e7fd57", image: LANDING_IMAGES.providers.bricks4kids, desc: "A hands-on STEM program in South Jamaica, Queens, at the Multi Service Center. Offers after-school sessions (1 day/week) and summer camps focused on building and problem-solving." },
-  { name: "Why Hate Math", address: "304 Tompkins Ave, Brooklyn, NY 11216", color: "#00d0c5", image: LANDING_IMAGES.providers.whyHateMath, desc: "A friendly center for kids 6+ offering one-on-one and group sessions, homework help, and school break camps." },
-  { name: "Binns Victory Martial Arts", address: "Flatbush, Brooklyn 11203", color: "#ffa967", image: LANDING_IMAGES.providers.binnsMartial, desc: "A family-owned karate dojo in Flatbush, Brooklyn, offering classes for ages 2\u201317+. Discounted intro sessions and free Baby Cubs trials (ages 2\u20134) available." },
+  { name: "NY Society of Play", address: "724 Manhattan Ave, Brooklyn, NY 11222", color: "#8bd5ff", image: LANDING_IMAGES.providers.nySociety, desc: "A unique space for kids 6+ to enjoy board games, role-playing, and storytelling. After-school, weekend, and break programs in a cozy, welcoming setting." },
+  { name: "Devore Dance", address: "Flatbush, Brooklyn 11203", color: "#ffa1c9", image: LANDING_IMAGES.providers.devoreDance, desc: "A beloved dance studio in Hollis, Queens serving local families for generations. Saturday classes for ages 4+ in a dedicated space that encourages creativity." },
+  { name: "Bricks4Kids", address: "114-02 Guy R Brewer Blvd Suite 224, Rochdale, NY 11434", color: "#e7fd57", image: LANDING_IMAGES.providers.bricks4kids, desc: "A hands-on STEM program at the Multi Service Center in South Jamaica, Queens. After-school and summer sessions focused on building and problem-solving." },
+  { name: "Why Hate Math", address: "304 Tompkins Ave, Brooklyn, NY 11216", color: "#93fff9", image: LANDING_IMAGES.providers.whyHateMath, desc: "A friendly center for kids 6+ offering one-on-one and group sessions, homework help, and school break camps to keep them learning year-round." },
+  { name: "Binns Victory Martial Arts", address: "Flatbush, Brooklyn 11203", color: "#ff9b82", image: LANDING_IMAGES.providers.binnsMartial, desc: "A family-owned karate dojo in Flatbush, Brooklyn with classes for ages 2\u201317+. Discounted intro sessions and free Baby Cubs trials for ages 2\u20134." },
 ];
 
 const FAQ_DATA = [
   {
     question: "What makes Summa special?",
-    answer: "Most fundraising platforms are built around need. Summa is built around joy — helping guardians fund the activities, programs, and experiences that let their kids thrive. Whether it's dance class, summer camp, or a robotics club, Summa makes it easy to rally your community around what matters most.",
+    answer: "Most fundraising platforms are built around need. Summa is built around joy. We help parents share the cost of the experiences that build memories with their child — sports, camps, lessons, and more. Summa is designed to make it easy to tap into your circle — the friends and family who already love your child and want to be an active part of their growth.",
   },
   {
     question: "Does Summa process payments?",
-    answer: "No. Summa does not process or hold any money. Instead, it helps you share your payment details — like Venmo, Zelle, or PayPal — so supporters can send contributions directly to you through the platform they already trust.",
+    answer: "No. Summa does not process or hold any money. When someone supports your fund, they send money directly to you through the payment methods you've set up — like Venmo, Cash App, or Zelle. Summa simply helps you organize, share, and track your fund.",
   },
   {
     question: "Does Summa cost money?",
@@ -5022,7 +5022,7 @@ const FAQ_DATA = [
   },
   {
     question: "Do I need an account to contribute to someone's fund?",
-    answer: "No, you don't need to sign up to give. Simply visit a fund page, choose your preferred payment method, and send your contribution directly to the guardian.",
+    answer: "No, you don't need to sign up to give. But creating a free account gives you access to extras like setting up your own fund and tracking fund progress.",
   },
 ];
 
@@ -5160,14 +5160,18 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
       {/* Font imports */}
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
 
-      {/* ---- NAV BAR ---- */}
+      {/* ---- FLOATING NAV BAR ---- */}
       <div style={{
-        width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-        padding: `24px ${px}px`, boxSizing: "border-box", backgroundColor: "#fff",
-        position: "sticky", top: 0, zIndex: 100,
+        position: "absolute", top: 0, left: 0, right: 0, zIndex: 100,
+        display: "flex", justifyContent: "center",
+        padding: `24px ${px}px`, boxSizing: "border-box",
       }}>
         <div style={{
-          width: "100%", maxWidth: 1120, display: "flex", alignItems: "center", justifyContent: "space-between",
+          width: "100%", maxWidth: 1120,
+          backgroundColor: "#fff", borderRadius: 999,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: isDesktop ? "16px 64px" : "12px 24px",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
         }}>
           {/* Logo */}
           <span style={{
@@ -5178,14 +5182,6 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
           </span>
           {/* Nav right */}
           <div style={{ display: "flex", alignItems: "center", gap: isDesktop ? 32 : 16 }}>
-            <button onClick={onStart} style={{
-              background: "linear-gradient(90deg, #eafe7e, #d7ff77)", border: "1px solid #191919",
-              borderRadius: 24, padding: isDesktop ? "16px 32px" : "12px 20px", cursor: "pointer",
-              fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
-              color: "#131820", whiteSpace: "nowrap",
-            }}>
-              Start with Summa
-            </button>
             <button onClick={onLogin} style={{
               backgroundColor: "#fbfaf3", border: "none", borderRadius: 16,
               cursor: "pointer", padding: isDesktop ? 24 : "12px 16px",
@@ -5194,15 +5190,28 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
             }}>
               Log in
             </button>
+            <button onClick={onStart} style={{
+              background: "#e7fd57", border: "1px solid #191919",
+              borderRadius: 999, padding: isDesktop ? "24px 32px" : "12px 20px", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
+              color: "#131820", whiteSpace: "nowrap",
+            }}>
+              Start with Summa
+            </button>
+            {/* Hamburger menu icon */}
+            <svg width={24} height={24} viewBox="0 0 24 24" fill="none" style={{ cursor: "pointer", flexShrink: 0 }}>
+              <path d="M3 6h18M3 12h18M3 18h18" stroke="#131820" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
           </div>
         </div>
       </div>
 
       {/* ---- HERO SECTION ---- */}
       <div style={{
-        width: "100%", background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
+        width: "100%", height: isDesktop ? 580 : "auto", minHeight: isDesktop ? 580 : 420,
+        background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
         padding: `${isDesktop ? 64 : 48}px ${px}px`, boxSizing: "border-box",
-        display: "flex", flexDirection: "column", alignItems: "center",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end",
         position: "relative", overflow: "hidden",
       }}>
         {/* Hero background image overlay */}
@@ -5237,13 +5246,107 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
             </p>
           </div>
           <button onClick={onStart} style={{
-            backgroundColor: "#fff", border: "1px solid #191919", borderRadius: 24,
-            padding: "16px 32px", cursor: "pointer",
+            backgroundColor: "#fff", border: "none", borderRadius: 999,
+            padding: "24px 32px", cursor: "pointer",
             fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
             color: "#191919",
           }}>
             Start with Summa
           </button>
+        </div>
+      </div>
+
+      {/* ---- SECTION: ABOUT / HOW IT WORKS ---- */}
+      <div style={{
+        width: "100%", padding: `64px ${px}px`, boxSizing: "border-box",
+        maxWidth: 1440, margin: "0 auto",
+        display: "flex", flexDirection: "column", gap: 24,
+      }}>
+        <h2 style={{
+          fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 24, lineHeight: 1.4,
+          color: "#131820", margin: 0,
+        }}>
+          Raising funds with Summa is easy
+        </h2>
+        <div style={{
+          display: "flex", gap: 64, alignItems: isDesktop ? "center" : "flex-start",
+          flexDirection: isDesktop ? "row" : "column",
+        }}>
+          {/* Steps */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 24, flex: isDesktop ? undefined : 1, width: isDesktop ? 640 : "100%" }}>
+            {/* Step 1 */}
+            <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+              <div style={{
+                width: 48, height: 48, minWidth: 48, borderRadius: 999,
+                border: "1px solid #ccff5d", display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 32, lineHeight: 1.4, color: "#000" }}>1</span>
+              </div>
+              <div style={{ flex: 1, paddingTop: 8 }}>
+                <h3 style={{
+                  fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: isDesktop ? 24 : 20, lineHeight: 1.4,
+                  color: "#131820", margin: "0 0 16px 0",
+                }}>
+                  Set up a fund for your child
+                </h3>
+                <p style={{ fontFamily: T.font.body, fontWeight: 400, fontSize: 16, lineHeight: 1.6, color: "#131820", margin: 0 }}>
+                  <strong style={{ fontWeight: 700 }}>It&rsquo;s free and takes just a few minutes.</strong> Follow the prompts to add details and set your goal. You can make changes anytime.
+                </p>
+              </div>
+            </div>
+            {/* Step 2 */}
+            <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+              <div style={{
+                width: 48, height: 48, minWidth: 48, borderRadius: 999,
+                border: "1px solid #ccff5d", display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 32, lineHeight: 1.4, color: "#000" }}>2</span>
+              </div>
+              <div style={{ flex: 1, paddingTop: 8 }}>
+                <h3 style={{
+                  fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: isDesktop ? 24 : 20, lineHeight: 1.4,
+                  color: "#131820", margin: "0 0 16px 0",
+                }}>
+                  Share with your circle
+                </h3>
+                <p style={{ fontFamily: T.font.body, fontWeight: 400, fontSize: 16, lineHeight: 1.6, color: "#131820", margin: 0 }}>
+                  Send your link to the friends and family who love your kid. They can view and give right from their browser — no app needed, no sign-up required.
+                </p>
+              </div>
+            </div>
+            {/* Step 3 */}
+            <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+              <div style={{
+                width: 48, height: 48, minWidth: 48, borderRadius: 999,
+                border: "1px solid #ccff5d", display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 32, lineHeight: 1.4, color: "#000" }}>3</span>
+              </div>
+              <div style={{ flex: 1, paddingTop: 8 }}>
+                <h3 style={{
+                  fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: isDesktop ? 24 : 20, lineHeight: 1.4,
+                  color: "#131820", margin: "0 0 16px 0",
+                }}>
+                  Receive contributions directly
+                </h3>
+                <p style={{ fontFamily: T.font.body, fontWeight: 400, fontSize: 16, lineHeight: 1.6, color: "#131820", margin: 0 }}>
+                  Connect Venmo, Cash App, or Zelle and receive support straight from your community. We&rsquo;ll help you track every dollar.
+                </p>
+              </div>
+            </div>
+          </div>
+          {/* Phone screenshot */}
+          {isDesktop && (
+            <div style={{
+              width: 303, height: 492, borderRadius: 24, overflow: "hidden", flexShrink: 0,
+            }}>
+              <img
+                src="https://www.figma.com/api/mcp/asset/fca59069-6243-4faa-a2af-1ebc39e80a1d"
+                alt="Summa fund page preview"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -5260,25 +5363,27 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
             fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 24, lineHeight: 1.4,
             color: "#131820", margin: 0,
           }}>
-            Providers We Love
+            Providers we love
           </h2>
           {/* Carousel controls */}
           <div style={{ display: "flex", gap: 32 }}>
             <button onClick={() => scrollProviders("left")} style={{
               width: 40, height: 40, borderRadius: 999, border: "none", cursor: "pointer",
-              background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
+              backgroundColor: "#131820",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 18, color: "#131820",
             }}>
-              &#8249;
+              <svg width={14} height={14} viewBox="0 0 14 14" fill="none">
+                <path d="M9 3L5 7L9 11" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </button>
             <button onClick={() => scrollProviders("right")} style={{
               width: 40, height: 40, borderRadius: 999, border: "none", cursor: "pointer",
-              background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
+              backgroundColor: "#131820",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 18, color: "#131820",
             }}>
-              &#8250;
+              <svg width={14} height={14} viewBox="0 0 14 14" fill="none">
+                <path d="M5 3L9 7L5 11" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </button>
           </div>
         </div>
@@ -5288,7 +5393,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
           color: "#131820", margin: 0, padding: `16px ${px}px 24px`,
           maxWidth: 1440, boxSizing: "border-box",
         }}>
-          Programs and activities trusted by parents just like you
+          Corem ipsum dolor sit amet, consectetur adipiscing elit.
         </p>
         {/* Scrollable row */}
         <div
@@ -5319,7 +5424,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
         }}>
           Have questions?
         </h2>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 34, width: "100%" }}>
           {FAQ_DATA.map((faq, i) => (
             <AccordionItem key={i} question={faq.question} answer={faq.answer} />
           ))}
