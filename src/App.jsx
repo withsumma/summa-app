@@ -5160,6 +5160,16 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
       {/* Font imports */}
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
 
+      {/* Subtle background texture overlay */}
+      <img
+        src="/summa-hero.png" alt="" aria-hidden="true"
+        style={{
+          position: "absolute", top: 0, left: 0,
+          width: "100%", height: "100%", objectFit: "cover",
+          opacity: 0.05, pointerEvents: "none", zIndex: 0,
+        }}
+      />
+
       {/* ---- FLOATING NAV BAR ---- */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, zIndex: 100,
@@ -5336,17 +5346,19 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
             </div>
           </div>
           {/* Phone screenshot */}
-          {isDesktop && (
-            <div style={{
-              width: 303, height: 492, borderRadius: 24, overflow: "hidden", flexShrink: 0,
-            }}>
-              <img
-                src="https://www.figma.com/api/mcp/asset/fca59069-6243-4faa-a2af-1ebc39e80a1d"
-                alt="Summa fund page preview"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            </div>
-          )}
+          <div style={{
+            width: isDesktop ? 303 : "100%", maxWidth: isDesktop ? 303 : 280,
+            height: isDesktop ? 492 : "auto",
+            aspectRatio: isDesktop ? undefined : "303/492",
+            borderRadius: 24, overflow: "hidden", flexShrink: 0,
+            alignSelf: isDesktop ? undefined : "center",
+          }}>
+            <img
+              src="https://www.figma.com/api/mcp/asset/fca59069-6243-4faa-a2af-1ebc39e80a1d"
+              alt="Summa fund page preview"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          </div>
         </div>
       </div>
 
