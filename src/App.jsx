@@ -5102,15 +5102,16 @@ function AccordionItem({ question, answer }) {
   const isDesktop = useIsDesktop();
   return (
     <div style={{
-      backgroundColor: "#fff", border: "1px solid #fbfaf3", borderRadius: 24,
+      backgroundColor: "#ffffff", border: "1px solid #fbfaf3", borderRadius: 24,
       padding: isDesktop ? 32 : 24, width: "100%", boxSizing: "border-box",
+      display: "flex", flexDirection: "column", gap: open ? 24 : 0,
     }}>
       <button
         onClick={() => setOpen(!open)}
         style={{
           background: "none", border: "none", cursor: "pointer", padding: 0,
           width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-          gap: 16, textAlign: "left",
+          gap: 32, textAlign: "left",
         }}
       >
         <span style={{
@@ -5120,7 +5121,7 @@ function AccordionItem({ question, answer }) {
           {question}
         </span>
         <svg
-          width={isDesktop ? 48 : 32} height={isDesktop ? 48 : 32} viewBox="0 0 48 48" fill="none"
+          width={48} height={48} viewBox="0 0 48 48" fill="none"
           style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.25s ease" }}
         >
           <path d="M14 20L24 30L34 20" stroke="#131820" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -5129,7 +5130,7 @@ function AccordionItem({ question, answer }) {
       {open && (
         <p style={{
           fontFamily: T.font.body, fontWeight: 400, fontSize: isDesktop ? 20 : 16,
-          lineHeight: 1.6, color: "#131820", margin: "16px 0 0 0",
+          lineHeight: 1.6, color: "#000", margin: 0,
         }}>
           {answer}
         </p>
