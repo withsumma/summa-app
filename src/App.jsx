@@ -5235,7 +5235,7 @@ function ProviderCard({ provider, isDesktop }) {
     }}>
       {/* Image */}
       <div style={{
-        width: "100%", aspectRatio: "316/178", borderRadius: 24, overflow: "hidden",
+        width: "100%", aspectRatio: "4/3", borderRadius: 16, overflow: "hidden",
         backgroundColor: "#ddd",
       }}>
         <img src={provider.image} alt={provider.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
