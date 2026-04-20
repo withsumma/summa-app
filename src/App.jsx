@@ -5233,6 +5233,13 @@ function ProviderCard({ provider, isDesktop }) {
       width: isDesktop ? 343 : 300, minWidth: isDesktop ? 343 : 300, flexShrink: 0,
       boxSizing: "border-box",
     }}>
+      {/* Image */}
+      <div style={{
+        width: "100%", aspectRatio: "316/178", borderRadius: 24, overflow: "hidden",
+        backgroundColor: "#ddd",
+      }}>
+        <img src={provider.image} alt={provider.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
       {/* Header */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <a
@@ -5252,13 +5259,6 @@ function ProviderCard({ provider, isDesktop }) {
         }}>
           {provider.address}
         </p>
-      </div>
-      {/* Image */}
-      <div style={{
-        width: "100%", aspectRatio: "316/178", borderRadius: 24, overflow: "hidden",
-        backgroundColor: "#ddd",
-      }}>
-        <img src={provider.image} alt={provider.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </div>
       {/* Description */}
       <p style={{
