@@ -5485,7 +5485,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
         display: "flex", flexDirection: "column", gap: 24,
       }}>
         <h2 style={{
-          fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 24, lineHeight: 1.4,
+          fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: isDesktop ? 36 : 24, lineHeight: 1.4,
           color: "#131820", margin: 0,
         }}>
           Raising funds with Summa is easy
@@ -5584,7 +5584,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
           padding: `0 ${px}px`, maxWidth: 1440, margin: "0 auto", boxSizing: "border-box",
         }}>
           <h2 style={{
-            fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 24, lineHeight: 1.4,
+            fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: isDesktop ? 36 : 24, lineHeight: 1.4,
             color: "#131820", margin: 0,
           }}>
             Providers we love
@@ -5643,7 +5643,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
         maxWidth: 1440, margin: "0 auto",
       }}>
         <h2 style={{
-          fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: isDesktop ? 32 : 24, lineHeight: 1.4,
+          fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: isDesktop ? 36 : 24, lineHeight: 1.4,
           color: "#131820", margin: "0 0 24px 0",
         }}>
           Have questions?
@@ -5913,7 +5913,7 @@ function PrivacyPolicyPage({ onStart, onLogin, onBack, onTerms }) {
         {PRIVACY_SECTIONS.map((section, i) => (
           <div key={i} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <h2 style={{
-              fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 24, lineHeight: 1.4,
+              fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: isDesktop ? 36 : 24, lineHeight: 1.4,
               color: "#131820", margin: 0,
             }}>
               {section.title}
@@ -6448,7 +6448,7 @@ function TermsOfUsePage({ onStart, onLogin, onBack, onPrivacy }) {
         {TERMS_SECTIONS.map((section, i) => (
           <div key={i} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <h2 style={{
-              fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 24, lineHeight: 1.4,
+              fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: isDesktop ? 36 : 24, lineHeight: 1.4,
               color: "#131820", margin: 0,
             }}>
               {section.title}
