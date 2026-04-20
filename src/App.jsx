@@ -5197,6 +5197,7 @@ function AccordionItem({ question, answer }) {
 function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
   const isDesktop = useIsDesktop();
   const scrollRef = useRef(null);
+  const [showPreAlpha, setShowPreAlpha] = useState(false);
 
   const scrollProviders = (dir) => {
     if (scrollRef.current) {
@@ -5259,18 +5260,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
             }}>
               Log in
             </button>
-            <button onClick={onStart} style={{
-              background: "#e7fd57", border: "1px solid #191919",
-              borderRadius: 999, padding: isDesktop ? "24px 32px" : "12px 20px", cursor: "pointer",
-              fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
-              color: "#131820", whiteSpace: "nowrap",
-            }}>
-              Start with Summa
-            </button>
-            {/* Hamburger menu icon */}
-            <svg width={24} height={24} viewBox="0 0 24 24" fill="none" style={{ cursor: "pointer", flexShrink: 0 }}>
-              <path d="M3 6h18M3 12h18M3 18h18" stroke="#131820" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+            {/* PRE-ALPHA: "Start with Summa" and hamburger menu hidden during pre-alpha testing */}
           </div>
         </div>
       </div>
@@ -5314,7 +5304,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
               Summa makes it easy to set up a page, share it with your community, and turn your child&rsquo;s aspirations into achievements.
             </p>
           </div>
-          <button onClick={onStart} style={{
+          <button onClick={() => setShowPreAlpha(true)} style={{
             backgroundColor: "#fff", border: "none", borderRadius: 999,
             padding: "24px 32px", cursor: "pointer",
             fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
@@ -5324,6 +5314,50 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
           </button>
         </div>
       </div>
+
+      {/* PRE-ALPHA MODAL */}
+      {showPreAlpha && (
+        <div
+          onClick={() => setShowPreAlpha(false)}
+          style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.4)", zIndex: 1000,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: 20,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: "#fff", borderRadius: 24, padding: 32,
+              maxWidth: 400, width: "100%", textAlign: "center",
+              display: "flex", flexDirection: "column", gap: 16, alignItems: "center",
+            }}
+          >
+            <span style={{ fontSize: 32 }}>🚧</span>
+            <h3 style={{
+              fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 20, lineHeight: 1.4,
+              color: "#131820", margin: 0,
+            }}>
+              Coming Soon
+            </h3>
+            <p style={{
+              fontFamily: T.font.body, fontWeight: 400, fontSize: 16, lineHeight: 1.6,
+              color: "#131820", margin: 0,
+            }}>
+              This feature is currently unavailable during pre-alpha.
+            </p>
+            <button onClick={() => setShowPreAlpha(false)} style={{
+              backgroundColor: "#131820", color: "#fff", border: "none", borderRadius: 999,
+              padding: "12px 32px", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
+              marginTop: 8,
+            }}>
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ---- SECTION: ABOUT / HOW IT WORKS ---- */}
       <div style={{
@@ -5679,14 +5713,7 @@ function PrivacyPolicyPage({ onStart, onLogin, onBack, onTerms }) {
             summa
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: isDesktop ? 32 : 16 }}>
-            <button onClick={onStart} style={{
-              background: "linear-gradient(90deg, #eafe7e, #d7ff77)", border: "1px solid #191919",
-              borderRadius: 24, padding: isDesktop ? "16px 32px" : "12px 20px", cursor: "pointer",
-              fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
-              color: "#131820", whiteSpace: "nowrap",
-            }}>
-              Start with Summa
-            </button>
+            {/* PRE-ALPHA: "Start with Summa" hidden during pre-alpha testing */}
             <button onClick={onLogin} style={{
               backgroundColor: "#fbfaf3", border: "none", borderRadius: 16,
               cursor: "pointer", padding: isDesktop ? 24 : "12px 16px",
@@ -6228,14 +6255,7 @@ function TermsOfUsePage({ onStart, onLogin, onBack, onPrivacy }) {
             summa
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: isDesktop ? 32 : 16 }}>
-            <button onClick={onStart} style={{
-              background: "linear-gradient(90deg, #eafe7e, #d7ff77)", border: "1px solid #191919",
-              borderRadius: 24, padding: isDesktop ? "16px 32px" : "12px 20px", cursor: "pointer",
-              fontFamily: T.font.body, fontSize: isDesktop ? 16 : 14, fontWeight: 500, lineHeight: 1.2,
-              color: "#131820", whiteSpace: "nowrap",
-            }}>
-              Start with Summa
-            </button>
+            {/* PRE-ALPHA: "Start with Summa" hidden during pre-alpha testing */}
             <button onClick={onLogin} style={{
               backgroundColor: "#fbfaf3", border: "none", borderRadius: 16,
               cursor: "pointer", padding: isDesktop ? 24 : "12px 16px",
