@@ -2521,10 +2521,196 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
 
   const isDesktop = useIsDesktop();
 
+  // Shared content sections rendered in both desktop right column and mobile content card
+  const renderFundContent = () => (<>
+        {/* Progress Section */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+            <span style={{ fontFamily: T.font.body, fontSize: 20, fontWeight: 700, lineHeight: 1.4, color: T.color.primary }}>
+              {raisedFormatted} raised
+            </span>
+            <span style={{ fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: T.color.neutral700 }}>
+              {goalFormatted} goal
+            </span>
+          </div>
+          <div style={{
+            width: "100%", height: 8, backgroundColor: "#e8e8e8",
+            borderRadius: 4, overflow: "hidden", position: "relative",
+          }}>
+            {totalPct > confirmedPct && (
+              <div style={{
+                position: "absolute", left: 0, top: 0,
+                width: `${Math.max(totalPct, 0.3)}%`, height: "100%",
+                backgroundColor: "#e7fd57", borderRadius: 4, opacity: 0.35,
+                transition: "width 0.6s ease",
+              }} />
+            )}
+            <div style={{
+              position: "absolute", left: 0, top: 0,
+              width: `${Math.max(confirmedPct, confirmed > 0 ? 0.3 : 0)}%`, height: "100%",
+              backgroundColor: "#e7fd57", borderRadius: 4, transition: "width 0.6s ease",
+            }} />
+          </div>
+          <span style={{ fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: T.color.neutral700 }}>
+            {supporterCount} {supporterCount === 1 ? "supporter" : "supporters"}
+          </span>
+        </div>
+
+        {/* Description */}
+        <div style={{
+          width: "100%", backgroundColor: "rgba(255,255,255,0.8)",
+          borderRadius: 16, padding: 20, boxSizing: "border-box",
+        }}>
+          <RichText style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.5, color: T.color.primary }}>
+            {data.description || "No description provided."}
+          </RichText>
+        </div>
+
+        {/* Content Blocks — "More info about this fund" */}
+        {(data.contentBlocks || []).length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 24, width: "100%" }}>
+            <h2 style={{
+              fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
+              color: "#131820", margin: 0, textAlign: "left", width: "100%",
+            }}>
+              More info about this fund
+            </h2>
+            {(data.contentBlocks || []).map((block) => (
+              <div key={block.id} style={{
+                display: "flex", flexDirection: "column", width: "100%",
+                borderRadius: 16, overflow: "hidden",
+              }}>
+                {block.image && (
+                  <div style={{
+                    width: "100%", aspectRatio: "480/270", backgroundColor: T.color.neutral300,
+                    borderRadius: 16, overflow: "hidden",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(block.imagePosition || {x:50,y:50}).x}% ${(block.imagePosition || {x:50,y:50}).y}%` }} />
+                  </div>
+                )}
+                <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10, boxSizing: "border-box" }}>
+                  {block.title && (
+                    <p style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 20, lineHeight: 1.6, color: T.color.primary, margin: 0 }}>
+                      {block.title}
+                    </p>
+                  )}
+                  {block.description && (
+                    <RichText style={{ fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6, color: T.color.primary }}>
+                      {block.description}
+                    </RichText>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Latest Activity Feed */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
+          <h3 style={{
+            fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
+            color: T.color.primary, margin: 0, textAlign: "left",
+          }}>
+            Latest activity
+          </h3>
+          {(data.donations || []).length === 0 ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span style={{ fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: T.color.primary }}>
+                Be the first to support!
+              </span>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {(data.donations || []).map((donation) => {
+                const initial = (donation.name || "A").charAt(0).toUpperCase();
+                return (
+                  <div key={donation.id} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+                      background: "linear-gradient(135deg, #d6ff76, #eafe7e)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <span style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 14, color: T.color.primary, lineHeight: 1 }}>
+                        {initial}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0, paddingTop: (36 - 14 * 1.4) / 2 }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
+                        <span style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 14, lineHeight: 1.4, color: T.color.primary }}>
+                          {donation.name} donated ${donation.amount.toLocaleString()}
+                        </span>
+                        <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.neutral700 }}>
+                          {donation.time}
+                        </span>
+                      </div>
+                      {donation.message && (
+                        <p style={{ fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: T.color.primary, margin: 0, opacity: 0.8 }}>
+                          {donation.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Organizer Section — white card with Contact button */}
+        <div style={{
+          backgroundColor: T.color.white, borderRadius: 16, padding: 24,
+          width: "100%", boxSizing: "border-box",
+        }}>
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%",
+          }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 0 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 20, flexShrink: 0,
+                backgroundColor: T.color.neutral300, display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <span style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 16, color: T.color.primary, lineHeight: 1 }}>
+                  {(organizer || "O").charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.neutral700 }}>
+                  Organized by
+                </span>
+                <span style={{ fontFamily: T.font.body, fontWeight: 600, fontSize: 14, lineHeight: 1.4, color: T.color.primary }}>
+                  {organizer}
+                </span>
+              </div>
+            </div>
+            <button onClick={() => {
+              const email = data.email || "";
+              if (email) window.open(`mailto:${email}`, "_blank");
+            }} style={{
+              backgroundColor: T.color.white, border: "2px solid #eafe7e",
+              borderRadius: T.radius.circle, padding: "16px 24px", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: 14, fontWeight: 400, lineHeight: 1.4,
+              color: "#131820", whiteSpace: "nowrap",
+            }}>
+              Contact
+            </button>
+          </div>
+        </div>
+
+        {/* Report this Summa Fund */}
+        <p style={{ fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: "#000", margin: 0, width: "100%" }}>
+          🚩{" "}
+          <span style={{ textDecoration: "underline", cursor: "pointer" }}>Report this Summa Fund</span>
+        </p>
+  </>);
+
   return (
     <div style={{
       backgroundColor: "transparent", display: "flex", flexDirection: "column",
-      gap: 0, alignItems: "center", paddingTop: 0, paddingBottom: 48,
+      gap: 0, alignItems: "center", paddingTop: 0, paddingBottom: isDesktop ? 48 : 0,
       width: "100%", maxWidth: isDesktop ? 1200 : 375, minHeight: isDesktop ? "auto" : "100vh", margin: "0 auto",
       fontFamily: T.font.body, boxSizing: "border-box",
     }}>
@@ -2627,29 +2813,29 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
         </div>
       )}
 
-      {/* Header — Logo left, nav right */}
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        width: "100%", padding: isDesktop ? "16px 48px" : "16px 16px", boxSizing: "border-box",
-        height: isDesktop ? 64 : "auto",
-      }}>
-        <button onClick={goHome} style={{
-          background: "none", border: "none", cursor: "pointer", padding: 0,
-          fontFamily: T.font.heading, fontWeight: 700, fontSize: isDesktop ? 24 : 18, color: T.color.primary,
-          letterSpacing: 1,
+      {/* ===== DESKTOP LAYOUT ===== */}
+      {isDesktop && (<>
+        {/* Desktop Header */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          width: "100%", padding: "16px 48px", boxSizing: "border-box", height: 64,
         }}>
-          summa
-        </button>
-        <div style={{ display: "flex", alignItems: "center", gap: isDesktop ? 24 : 12 }}>
-          {isDesktop && !isSignedIn && (
-            <button onClick={() => goTo(22)} style={{
-              background: "none", border: "none", cursor: "pointer", padding: 0,
-              fontFamily: T.font.body, fontSize: 14, fontWeight: 500, color: T.color.primary,
-            }}>
-              Sign in
-            </button>
-          )}
-          {isDesktop ? (
+          <button onClick={goHome} style={{
+            background: "none", border: "none", cursor: "pointer", padding: 0,
+            fontFamily: T.font.heading, fontWeight: 700, fontSize: 24, color: T.color.primary,
+            letterSpacing: 1,
+          }}>
+            summa
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+            {!isSignedIn && (
+              <button onClick={() => goTo(22)} style={{
+                background: "none", border: "none", cursor: "pointer", padding: 0,
+                fontFamily: T.font.body, fontSize: 14, fontWeight: 500, color: T.color.primary,
+              }}>
+                Sign in
+              </button>
+            )}
             <button onClick={isSignedIn ? () => goTo(0) : () => goTo(22)} style={{
               backgroundColor: "#e7fd57", border: "1px solid #191919", borderRadius: T.radius.circle,
               padding: "10px 20px", cursor: "pointer",
@@ -2658,289 +2844,113 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
             }}>
               Start a Summa fund
             </button>
-          ) : (
+          </div>
+        </div>
+
+        {/* Desktop Two-column body */}
+        <div style={{
+          display: "flex", flexDirection: "row", gap: 48, alignItems: "stretch",
+          width: "100%", padding: "24px 48px 48px", boxSizing: "border-box",
+        }}>
+          {/* LEFT COLUMN — Cover Image */}
+          <div style={{
+            flex: 1, position: "sticky", top: 80, alignSelf: "flex-start",
+            height: "calc(100vh - 128px)", display: "flex", flexDirection: "column",
+          }}>
+            <div style={{
+              width: "100%", height: "100%", backgroundColor: T.color.white, borderRadius: 16,
+              overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {data.coverImage ? (
+                <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
+              ) : (
+                <svg width="100%" height="100%" viewBox="0 0 375 500" preserveAspectRatio="xMidYMid slice">
+                  <rect width="375" height="500" fill={T.color.neutral300} />
+                  <polygon points="75,420 160,180 250,420" fill="white" opacity="0.6" />
+                  <polygon points="200,420 265,250 330,420" fill="white" opacity="0.4" />
+                </svg>
+              )}
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN — Content */}
+          <div style={{
+            flex: "0 0 480px", display: "flex", flexDirection: "column", gap: 24,
+            alignItems: "flex-start", width: "100%", boxSizing: "border-box",
+          }}>
+            <div style={{ width: "100%", textAlign: "left" }}>
+              <h1 style={{ fontFamily: T.font.heading, fontWeight: 700, fontSize: 32, lineHeight: 1.4, color: T.color.primary, margin: 0 }}>
+                {displayName}
+              </h1>
+            </div>
+            <ButtonPrimary text={ctaText} onClick={() => goTo(13)} />
+            {renderFundContent()}
+          </div>
+        </div>
+      </>)}
+
+      {/* ===== MOBILE LAYOUT ===== */}
+      {!isDesktop && (<>
+        {/* Mobile Full-bleed cover with overlay header */}
+        <div style={{ position: "relative", width: "100%", marginBottom: -24 }}>
+          <div style={{
+            width: "100%", height: 500, backgroundColor: T.color.neutral300,
+            border: `1px solid ${T.color.neutral500}`,
+            overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {data.coverImage ? (
+              <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
+            ) : (
+              <svg width="100%" height="100%" viewBox="0 0 375 500" preserveAspectRatio="xMidYMid slice">
+                <rect width="375" height="500" fill={T.color.neutral300} />
+                <polygon points="75,420 160,180 250,420" fill="white" opacity="0.6" />
+                <polygon points="200,420 265,250 330,420" fill="white" opacity="0.4" />
+              </svg>
+            )}
+          </div>
+          {/* Overlay header */}
+          <div style={{
+            position: "absolute", top: 0, left: 0, width: "100%",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: 16, boxSizing: "border-box",
+          }}>
+            <div style={{
+              backgroundColor: "rgba(255,255,255,0.9)", borderRadius: 8,
+              padding: 8, height: 36, display: "flex", alignItems: "center",
+            }}>
+              <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: "#000" }}>
+                This funding plan was created{" "}
+                <a href="https://withsumma.com" target="_blank" rel="noopener noreferrer" style={{ color: "#000", textDecoration: "underline" }}>with Summa</a>
+              </span>
+            </div>
             <button onClick={handleShare} style={{
-              backgroundColor: T.color.white, border: `2px solid #d6ff76`,
+              backgroundColor: T.color.white, border: "2px solid #d6ff76",
               borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
               fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
-              color: T.color.primary, display: "flex", alignItems: "center", justifyContent: "center",
-              gap: 8, whiteSpace: "nowrap",
+              color: T.color.primary, whiteSpace: "nowrap",
             }}>
               Share
             </button>
-          )}
+          </div>
         </div>
-      </div>
 
-      {/* Two-column wrapper (desktop) / single column (mobile) */}
-      <div style={{
-        display: "flex", flexDirection: isDesktop ? "row" : "column",
-        gap: isDesktop ? 48 : 24, alignItems: isDesktop ? "stretch" : "center",
-        width: "100%", padding: isDesktop ? "24px 48px 48px" : "0", boxSizing: "border-box",
-      }}>
-
-      {/* LEFT COLUMN (Cover Image) - Desktop: fills viewport height */}
-      {isDesktop && (
+        {/* Mobile Content card — overlaps cover image, rounded top corners */}
         <div style={{
-          flex: 1, position: "sticky", top: 80, alignSelf: "flex-start",
-          height: "calc(100vh - 128px)",
-          display: "flex", flexDirection: "column",
+          position: "relative", width: "100%",
+          borderRadius: "24px 24px 0 0", overflow: "hidden",
+          display: "flex", flexDirection: "column", gap: 24, alignItems: "center",
+          padding: "24px 16px 48px", boxSizing: "border-box",
+          background: T.gradient.bg,
         }}>
-          <div style={{
-            width: "100%", height: "100%", backgroundColor: T.color.white,
-            borderRadius: 16,
-            overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            {data.coverImage ? (
-              <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
-            ) : (
-              <svg width="100%" height="100%" viewBox="0 0 375 500" preserveAspectRatio="xMidYMid slice">
-                <rect width="375" height="500" fill={T.color.neutral300} />
-                <polygon points="75,420 160,180 250,420" fill="white" opacity="0.6" />
-                <polygon points="200,420 265,250 330,420" fill="white" opacity="0.4" />
-              </svg>
-            )}
+          <div style={{ width: "100%", textAlign: "left" }}>
+            <h1 style={{ fontFamily: T.font.heading, fontWeight: 700, fontSize: 28, lineHeight: 1.4, color: T.color.primary, margin: 0 }}>
+              {displayName}
+            </h1>
           </div>
+          <ButtonPrimary text={ctaText} onClick={() => goTo(13)} />
+          {renderFundContent()}
         </div>
-      )}
-
-      {/* RIGHT COLUMN (Content) */}
-      <div style={{
-        flex: isDesktop ? "0 0 480px" : undefined,
-        display: "flex", flexDirection: "column", gap: 24, alignItems: isDesktop ? "flex-start" : "center",
-        padding: isDesktop ? 0 : "0 16px", width: "100%", boxSizing: "border-box",
-      }}>
-        {/* Title */}
-        <div style={{ width: "100%", textAlign: "left" }}>
-          <h1 style={{
-            fontFamily: T.font.heading, fontWeight: 700, fontSize: isDesktop ? 32 : 28, lineHeight: 1.4,
-            color: T.color.primary, margin: 0,
-          }}>
-            {displayName}
-          </h1>
-        </div>
-
-        {/* Support CTA Button — right after title on desktop (matching Figma) */}
-        <ButtonPrimary text={ctaText} onClick={() => goTo(13)} />
-
-        {/* Cover Image (Mobile only) */}
-        {!isDesktop && (
-          <div style={{
-            width: "100%", aspectRatio: "3/4", backgroundColor: T.color.white,
-            border: `1px solid ${T.color.neutral500}`, borderRadius: 16,
-            overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            {data.coverImage ? (
-              <img src={data.coverImage} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(data.coverImagePosition || {x:50,y:50}).x}% ${(data.coverImagePosition || {x:50,y:50}).y}%` }} />
-            ) : (
-              <svg width="100%" height="100%" viewBox="0 0 375 500" preserveAspectRatio="xMidYMid slice">
-                <rect width="375" height="500" fill={T.color.neutral300} />
-                <polygon points="75,420 160,180 250,420" fill="white" opacity="0.6" />
-                <polygon points="200,420 265,250 330,420" fill="white" opacity="0.4" />
-              </svg>
-            )}
-          </div>
-        )}
-
-        {/* Progress Section — matching Figma layout */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
-          {/* Amount row */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-            <span style={{ fontFamily: T.font.body, fontSize: 20, fontWeight: 700, lineHeight: 1.4, color: T.color.primary }}>
-              {raisedFormatted} raised
-            </span>
-            <span style={{ fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: T.color.neutral700 }}>
-              {goalFormatted} goal
-            </span>
-          </div>
-          {/* Progress bar */}
-          <div style={{
-            width: "100%", height: 8, backgroundColor: "#e8e8e8",
-            borderRadius: 4, overflow: "hidden", position: "relative",
-          }}>
-            {/* Pending layer (lighter) */}
-            {totalPct > confirmedPct && (
-              <div style={{
-                position: "absolute", left: 0, top: 0,
-                width: `${Math.max(totalPct, 0.3)}%`, height: "100%",
-                backgroundColor: "#e7fd57",
-                borderRadius: 4, opacity: 0.35,
-                transition: "width 0.6s ease",
-              }} />
-            )}
-            {/* Confirmed layer (solid) */}
-            <div style={{
-              position: "absolute", left: 0, top: 0,
-              width: `${Math.max(confirmedPct, confirmed > 0 ? 0.3 : 0)}%`, height: "100%",
-              backgroundColor: "#e7fd57",
-              borderRadius: 4, transition: "width 0.6s ease",
-            }} />
-          </div>
-          {/* Supporter count */}
-          <span style={{ fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: T.color.neutral700 }}>
-            {supporterCount} {supporterCount === 1 ? "supporter" : "supporters"}
-          </span>
-        </div>
-
-        {/* Description */}
-        <div style={{
-          width: "100%", backgroundColor: "rgba(255,255,255,0.6)",
-          borderRadius: 16, padding: 20, boxSizing: "border-box",
-        }}>
-          <RichText style={{
-            fontFamily: T.font.body, fontSize: 16, lineHeight: 1.5,
-            color: T.color.primary,
-          }}>
-            {data.description || "No description provided."}
-          </RichText>
-        </div>
-
-        {/* Content Blocks — "More info about this fund" */}
-        {(data.contentBlocks || []).length > 0 && (
-          <div style={{
-            display: "flex", flexDirection: "column", gap: 32, width: "100%",
-            padding: "24px 0",
-          }}>
-            <h2 style={{
-              fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
-              color: T.color.primary, margin: 0, textAlign: "center", width: "100%",
-            }}>
-              More info about this fund
-            </h2>
-            {(data.contentBlocks || []).map((block) => (
-              <div key={block.id} style={{
-                display: "flex", flexDirection: "column", width: "100%",
-                borderRadius: 16, overflow: "hidden",
-              }}>
-                {/* Block image */}
-                {block.image && (
-                  <div style={{
-                    width: "100%", aspectRatio: "316/178", backgroundColor: T.color.white,
-                    border: `1px solid ${T.color.neutral500}`, borderRadius: "16px 16px 0 0",
-                    overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    <img src={block.image} alt={block.title} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${(block.imagePosition || {x:50,y:50}).x}% ${(block.imagePosition || {x:50,y:50}).y}%` }} />
-                  </div>
-                )}
-                {/* Block info */}
-                <div style={{
-                  backgroundColor: "rgba(255,255,255,0.6)", padding: 16,
-                  display: "flex", flexDirection: "column", gap: 10,
-                  boxSizing: "border-box",
-                }}>
-                  {block.title && (
-                    <p style={{
-                      fontFamily: T.font.body, fontWeight: 700, fontSize: 20, lineHeight: 1.6,
-                      color: T.color.primary, margin: 0,
-                    }}>
-                      {block.title}
-                    </p>
-                  )}
-                  {block.description && (
-                    <RichText style={{
-                      fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
-                      color: T.color.primary,
-                    }}>
-                      {block.description}
-                    </RichText>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Latest Activity Feed */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
-          <h3 style={{
-            fontFamily: T.font.heading, fontWeight: 700, fontSize: 20, lineHeight: 1.4,
-            color: T.color.primary, margin: 0, textAlign: "left",
-          }}>
-            Latest activity
-          </h3>
-          {(data.donations || []).length === 0 ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0" }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke={T.color.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span style={{ fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: T.color.primary }}>
-                Be the first to support!
-              </span>
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {(data.donations || []).map((donation) => {
-                const initial = (donation.name || "A").charAt(0).toUpperCase();
-                return (
-                  <div key={donation.id} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                    {/* Avatar with gradient bg */}
-                    <div style={{
-                      width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                      background: "linear-gradient(135deg, #d6ff76, #eafe7e)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      <span style={{
-                        fontFamily: T.font.body, fontWeight: 700, fontSize: 14,
-                        color: T.color.primary, lineHeight: 1,
-                      }}>
-                        {initial}
-                      </span>
-                    </div>
-                    {/* Donation details */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0, paddingTop: (36 - 14 * 1.4) / 2 }}>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
-                        <span style={{ fontFamily: T.font.body, fontWeight: 700, fontSize: 14, lineHeight: 1.4, color: T.color.primary }}>
-                          {donation.name} donated ${donation.amount.toLocaleString()}
-                        </span>
-                        <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.neutral700 }}>
-                          {donation.time}
-                        </span>
-                      </div>
-                      {donation.message && (
-                        <p style={{
-                          fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4,
-                          color: T.color.primary, margin: 0, opacity: 0.8,
-                        }}>
-                          {donation.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Organizer Section — matching Figma inline style */}
-        <div style={{
-          display: "flex", gap: 12, alignItems: "center",
-          paddingTop: 8, width: "100%",
-        }}>
-          {/* Organizer Avatar */}
-          <div style={{
-            width: 40, height: 40, borderRadius: 20, flexShrink: 0,
-            backgroundColor: T.color.neutral300, display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <span style={{
-              fontFamily: T.font.body, fontWeight: 700, fontSize: 16,
-              color: T.color.primary, lineHeight: 1,
-            }}>
-              {(organizer || "O").charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: T.color.neutral700 }}>
-              Organized by
-            </span>
-            <span style={{ fontFamily: T.font.body, fontWeight: 600, fontSize: 14, lineHeight: 1.4, color: T.color.primary }}>
-              {organizer}
-            </span>
-          </div>
-        </div>
-
-      </div>{/* END RIGHT COLUMN */}
-      </div>{/* END Two-column wrapper */}
+      </>)}
     </div>
   );
 }
