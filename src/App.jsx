@@ -5271,7 +5271,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
       <div style={{
         width: "100%", height: isDesktop ? 580 : "auto", minHeight: isDesktop ? 580 : 420,
         background: "linear-gradient(90deg, #eafe7e, #d7ff77)",
-        padding: `${isDesktop ? 64 : 48}px ${px}px`, boxSizing: "border-box",
+        padding: isDesktop ? `64px ${px}px` : `100px ${px}px 48px`, boxSizing: "border-box",
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end",
         position: "relative", overflow: "hidden",
       }}>
