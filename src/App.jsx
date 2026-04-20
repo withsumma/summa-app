@@ -2815,36 +2815,28 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
 
       {/* ===== DESKTOP LAYOUT ===== */}
       {isDesktop && (<>
-        {/* Desktop Header */}
+        {/* Desktop Header — "with Summa" tag + Share */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          width: "100%", padding: "16px 48px", boxSizing: "border-box", height: 64,
+          width: "100%", padding: "16px 48px", boxSizing: "border-box",
         }}>
-          <button onClick={goHome} style={{
-            background: "none", border: "none", cursor: "pointer", padding: 0,
-            fontFamily: T.font.heading, fontWeight: 700, fontSize: 24, color: T.color.primary,
-            letterSpacing: 1,
+          <div style={{
+            backgroundColor: "rgba(255,255,255,0.9)", borderRadius: 8,
+            padding: 8, height: 36, display: "flex", alignItems: "center",
           }}>
-            summa
-          </button>
-          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-            {!isSignedIn && (
-              <button onClick={() => goTo(22)} style={{
-                background: "none", border: "none", cursor: "pointer", padding: 0,
-                fontFamily: T.font.body, fontSize: 14, fontWeight: 500, color: T.color.primary,
-              }}>
-                Sign in
-              </button>
-            )}
-            <button onClick={isSignedIn ? () => goTo(0) : () => goTo(22)} style={{
-              backgroundColor: "#e7fd57", border: "1px solid #191919", borderRadius: T.radius.circle,
-              padding: "10px 20px", cursor: "pointer",
-              fontFamily: T.font.body, fontSize: 14, fontWeight: 600, color: T.color.primary,
-              whiteSpace: "nowrap",
-            }}>
-              Start a Summa fund
-            </button>
+            <span style={{ fontFamily: T.font.body, fontSize: 12, lineHeight: 1.4, color: "#000" }}>
+              This funding plan was created{" "}
+              <a href="https://withsumma.com" target="_blank" rel="noopener noreferrer" style={{ color: "#000", textDecoration: "underline" }}>with Summa</a>
+            </span>
           </div>
+          <button onClick={handleShare} style={{
+            backgroundColor: T.color.white, border: "2px solid #d6ff76",
+            borderRadius: T.radius.circle, padding: "8px 16px", cursor: "pointer",
+            fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
+            color: T.color.primary, whiteSpace: "nowrap",
+          }}>
+            Share
+          </button>
         </div>
 
         {/* Desktop Two-column body */}
