@@ -5496,9 +5496,9 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
           </div>
           {/* Right: Social icons */}
           <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-            <TikTokIcon size={32} />
-            <InstagramIcon size={32} />
-            <FacebookIcon size={32} />
+            <a href="https://www.instagram.com/with_summa" target="_blank" rel="noopener noreferrer" style={{ display: "flex" }}>
+              <InstagramIcon size={32} />
+            </a>
           </div>
         </div>
       </div>
@@ -5830,9 +5830,9 @@ function PrivacyPolicyPage({ onStart, onLogin, onBack, onTerms }) {
             </span>
           </div>
           <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-            <TikTokIcon size={32} />
-            <InstagramIcon size={32} />
-            <FacebookIcon size={32} />
+            <a href="https://www.instagram.com/with_summa" target="_blank" rel="noopener noreferrer" style={{ display: "flex" }}>
+              <InstagramIcon size={32} />
+            </a>
           </div>
         </div>
       </div>
@@ -6365,9 +6365,9 @@ function TermsOfUsePage({ onStart, onLogin, onBack, onPrivacy }) {
             </span>
           </div>
           <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-            <TikTokIcon size={32} />
-            <InstagramIcon size={32} />
-            <FacebookIcon size={32} />
+            <a href="https://www.instagram.com/with_summa" target="_blank" rel="noopener noreferrer" style={{ display: "flex" }}>
+              <InstagramIcon size={32} />
+            </a>
           </div>
         </div>
       </div>
