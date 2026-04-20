@@ -26,6 +26,60 @@ const T = {
 };
 
 // ============================================================
+// SCREEN DIRECTORY (last updated: 2026-04-20)
+// Sitemap #  |  Code #  |  Description
+// ============================================================
+//
+// 1.0 MARKETING (overlay pages, not in screens map)
+//   1.0  —   LandingPage .............. Home / marketing landing page
+//   1.1  —   PrivacyPolicyPage ........ Privacy policy
+//   1.2  —   TermsOfUsePage ........... Terms of use
+//
+// 2.0 AUTHENTICATION
+//   2.0  —   SignUpScreen .............. Sign up (first name, last name, email, pw, phone)
+//   2.1  22  SignInScreen .............. Sign in (email + password)
+//
+// 3.0 FUND CREATION
+//   3.0   0  SetupASummaFund0 ......... Fund for — start (Myself or Someone)
+//   3.1   1  SetupASummaFund1a ........ Who — Myself
+//   3.2   2  SetupASummaFund1b ........ Who — Someone I care for
+//   3.3   3  SetupASummaFund2 ......... Title
+//   3.4   4  SetupASummaFund3 ......... Description
+//   3.5   5  SetupASummaFund4 ......... Goal & target date
+//   3.6   6  SetupASummaFund5 ......... Cover photo
+//   3.7   7  SetupASummaFund6 ......... Payment methods
+//   3.8   8  ReviewSummaFund .......... Review & publish
+//   3.8.1 23 AddToPage ................ Add content block
+//   3.8.2 24 EditContentBlock ......... Edit content block
+//   3.9   9  ScreenComplete ........... Fund created — success
+//
+// 4.0 CREATOR FUND VIEW
+//   4.0  10  FundPage ................. Fund page (creator view)
+//   4.1  11  FundPageShare ............ Share fund link
+//
+// 5.0 SUPPORTER FUND VIEW
+//   5.0  12  FundPageSupporter ........ Fund page (public / supporter view)
+//   5.1  18  FundPageSupporterShare ... Supporter share
+//
+// 6.0 CONTRIBUTION FLOW
+//   6.0  13  SupportChooseAmount ...... Choose amount
+//   6.1  14  SupportPaymentMethod ..... Pick payment method
+//   6.2  15  SupportRecordPayment ..... Record payment disclosure
+//   6.3  16  SupportSenderDetails ..... Sender name & message
+//   6.4  17  SupportComplete .......... Thank you / confirmation
+//
+// 7.0 GUARDIAN DASHBOARD
+//   7.0  19  GuardianHome ............. Dashboard (list of funds)
+//   7.1  20  GuardianFundPage ......... Fund detail view
+//   7.2  21  GuardianReviewFund ....... Donation list / review
+//   7.3  25  EditSummaFund ............ Edit existing fund
+//
+// 8.0 ACCOUNT
+//   8.0  26  EditProfileScreen ........ Edit profile (phone, email, pw)
+//
+// ============================================================
+
+// ============================================================
 // SVG ICONS
 // ============================================================
 const ArrowBackIcon = () => (
@@ -2351,7 +2405,7 @@ function FundPageShare({ data, onBack }) {
                 url: fundUrl,
               }).catch(() => {});
             } else if (fundUrl) {
-              navigator.clipboard.writeText(`${message}\n\n${fundUrl}`).catch(() => {});
+              navigator.clipboard.writeText(fundUrl).catch(() => {});
             }
           }} style={{
             width: "100%", maxWidth: 343, height: 51, borderRadius: T.radius.circle,
@@ -6916,33 +6970,6 @@ export default function SummaFundSetup() {
     />,
     23: <AddToPage data={data} setData={setData} onBack={() => goTo(returnTo || 8, "left")} />,
     24: <EditContentBlock data={data} setData={setData} blockId={editingBlockId} onBack={() => { const ret = returnTo || 8; setEditingBlockId(null); goTo(ret, "left"); }} />,
-    26: <EditProfileScreen
-      data={data}
-      onBack={() => goTo(prevScreen || 19, "left")}
-      onSave={async (updates) => {
-        const { user, error } = await updateUserProfile(updates);
-        if (!error && user) {
-          const meta = user.user_metadata || {};
-          setData(prev => ({
-            ...prev,
-            email: user.email || prev.email,
-            phone: meta.phone || "",
-          }));
-        }
-        return { user, error };
-      }}
-      onSignOut={async () => {
-        await signOutUser();
-        setIsSignedIn(false);
-        setShowStart(true);
-        setData(prev => ({
-          fundFor: null, firstName: "", lastName: "",
-          recipientName: "", title: "", description: "", goal: "", targetDate: "",
-          paymentHandles: {}, coverImage: null, coverImagePosition: { x: 50, y: 50 },
-          contentBlocks: [], email: "", userId: null,
-        }));
-      }}
-    />,
     25: <EditSummaFund
       data={data} setData={setData}
       onBack={() => goTo(20, "left")}
@@ -6982,6 +7009,33 @@ export default function SummaFundSetup() {
           setFundsRefreshKey(k => k + 1);
           goTo(19);
         }
+      }}
+    />,
+    26: <EditProfileScreen
+      data={data}
+      onBack={() => goTo(prevScreen || 19, "left")}
+      onSave={async (updates) => {
+        const { user, error } = await updateUserProfile(updates);
+        if (!error && user) {
+          const meta = user.user_metadata || {};
+          setData(prev => ({
+            ...prev,
+            email: user.email || prev.email,
+            phone: meta.phone || "",
+          }));
+        }
+        return { user, error };
+      }}
+      onSignOut={async () => {
+        await signOutUser();
+        setIsSignedIn(false);
+        setShowStart(true);
+        setData(prev => ({
+          fundFor: null, firstName: "", lastName: "",
+          recipientName: "", title: "", description: "", goal: "", targetDate: "",
+          paymentHandles: {}, coverImage: null, coverImagePosition: { x: 50, y: 50 },
+          contentBlocks: [], email: "", userId: null,
+        }));
       }}
     />,
   };
