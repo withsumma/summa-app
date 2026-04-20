@@ -2711,7 +2711,7 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
     <div style={{
       backgroundColor: "transparent", display: "flex", flexDirection: "column",
       gap: 0, alignItems: "center", paddingTop: 0, paddingBottom: isDesktop ? 48 : 0,
-      width: "100%", maxWidth: isDesktop ? 1200 : 375, minHeight: isDesktop ? "auto" : "100vh", margin: "0 auto",
+      width: "100%", maxWidth: isDesktop ? 1200 : undefined, minHeight: isDesktop ? "auto" : "100vh", margin: "0 auto",
       fontFamily: T.font.body, boxSizing: "border-box",
     }}>
       {/* Share Modal Overlay */}
