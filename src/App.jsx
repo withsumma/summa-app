@@ -5000,11 +5000,11 @@ const LANDING_IMAGES = {
 };
 
 const PROVIDER_DATA = [
-  { name: "NY Society of Play", address: "724 Manhattan Ave, Brooklyn, NY 11222", color: "#8bd5ff", image: LANDING_IMAGES.providers.nySociety, desc: "A unique space for kids 6+ to enjoy board games, role-playing, and storytelling. After-school, weekend, and break programs in a cozy, welcoming setting." },
-  { name: "Devore Dance", address: "Flatbush, Brooklyn 11203", color: "#ffa1c9", image: LANDING_IMAGES.providers.devoreDance, desc: "A beloved dance studio in Hollis, Queens serving local families for generations. Saturday classes for ages 4+ in a dedicated space that encourages creativity." },
-  { name: "Bricks4Kids", address: "114-02 Guy R Brewer Blvd Suite 224, Rochdale, NY 11434", color: "#e7fd57", image: LANDING_IMAGES.providers.bricks4kids, desc: "A hands-on STEM program at the Multi Service Center in South Jamaica, Queens. After-school and summer sessions focused on building and problem-solving." },
-  { name: "Why Hate Math", address: "304 Tompkins Ave, Brooklyn, NY 11216", color: "#93fff9", image: LANDING_IMAGES.providers.whyHateMath, desc: "A friendly center for kids 6+ offering one-on-one and group sessions, homework help, and school break camps to keep them learning year-round." },
-  { name: "Binns Victory Martial Arts", address: "Flatbush, Brooklyn 11203", color: "#ff9b82", image: LANDING_IMAGES.providers.binnsMartial, desc: "A family-owned karate dojo in Flatbush, Brooklyn with classes for ages 2\u201317+. Discounted intro sessions and free Baby Cubs trials for ages 2\u20134." },
+  { name: "NY Society of Play", address: "724 Manhattan Ave, Brooklyn, NY 11222", color: "#8bd5ff", image: LANDING_IMAGES.providers.nySociety, url: "https://nyplays.org/", desc: "A unique space for kids 6+ to enjoy board games, role-playing, and storytelling. After-school, weekend, and break programs in a cozy, welcoming setting." },
+  { name: "Devore Dance", address: "Flatbush, Brooklyn 11203", color: "#ffa1c9", image: LANDING_IMAGES.providers.devoreDance, url: "https://www.devoredancecenter.com/", desc: "A beloved dance studio in Hollis, Queens serving local families for generations. Saturday classes for ages 4+ in a dedicated space that encourages creativity." },
+  { name: "Bricks 4 Kidz", address: "114-02 Guy R Brewer Blvd Suite 224, Rochdale, NY 11434", color: "#e7fd57", image: LANDING_IMAGES.providers.bricks4kids, url: "https://bricks4kidz.us/newyork-jamaica/", desc: "A hands-on STEM program at the Multi Service Center in South Jamaica, Queens. After-school and summer sessions focused on building and problem-solving." },
+  { name: "Why Hate Math", address: "304 Tompkins Ave, Brooklyn, NY 11216", color: "#93fff9", image: LANDING_IMAGES.providers.whyHateMath, url: "https://www.whyhatemath.com/", desc: "A friendly center for kids 6+ offering one-on-one and group sessions, homework help, and school break camps to keep them learning year-round." },
+  { name: "Binns Victory Martial Arts", address: "Flatbush, Brooklyn 11203", color: "#ff9b82", image: LANDING_IMAGES.providers.binnsMartial, url: "https://flatbushkaratekids.com/", desc: "A family-owned karate dojo in Flatbush, Brooklyn with classes for ages 2\u201317+. Discounted intro sessions and free Baby Cubs trials for ages 2\u20134." },
 ];
 
 const FAQ_DATA = [
@@ -5062,12 +5062,17 @@ function ProviderCard({ provider, isDesktop }) {
     }}>
       {/* Header */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <h3 style={{
-          fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: isDesktop ? 24 : 20,
-          lineHeight: 1.4, color: "#131820", margin: 0,
-        }}>
+        <a
+          href={provider.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: isDesktop ? 24 : 20,
+            lineHeight: 1.4, color: "#131820", margin: 0, textDecoration: "none",
+          }}
+        >
           {provider.name}
-        </h3>
+        </a>
         <p style={{
           fontFamily: T.font.body, fontWeight: 400, fontSize: 14, lineHeight: 1.4,
           color: "#131820", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -5081,10 +5086,6 @@ function ProviderCard({ provider, isDesktop }) {
         backgroundColor: "#ddd",
       }}>
         <img src={provider.image} alt={provider.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-      </div>
-      {/* Social icons */}
-      <div style={{ display: "flex", gap: 24 }}>
-        <GlobeIcon /><TikTokIcon /><InstagramIcon /><FacebookIcon />
       </div>
       {/* Description */}
       <p style={{
@@ -5409,7 +5410,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
           color: "#131820", margin: 0, padding: `16px ${px}px 24px`,
           maxWidth: 1440, boxSizing: "border-box",
         }}>
-          Corem ipsum dolor sit amet, consectetur adipiscing elit.
+          We&rsquo;re proud to spotlight local programs and providers that go above and beyond for kids in their community.
         </p>
         {/* Scrollable row */}
         <div
