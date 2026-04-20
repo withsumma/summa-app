@@ -3886,6 +3886,27 @@ function FundPageSupporterShare({ data, onBack }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(defaultMsg);
   const maxChars = 1000;
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const fundUrl = data.fundSlug ? `${window.location.origin}/fund/${data.fundSlug}` : window.location.href;
+  const displayName = data.title || "My Summa Fund";
+
+  const handleShareVia = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: displayName, text: message, url: fundUrl });
+        return;
+      } catch (e) { /* cancelled */ }
+    }
+    setShowShareModal(true);
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(fundUrl).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    }).catch(() => {});
+  };
 
   // Shared header
   const header = (
@@ -4005,7 +4026,7 @@ function FundPageSupporterShare({ data, onBack }) {
           }}>
             Customize message
           </button>
-          <button style={{
+          <button onClick={handleShareVia} style={{
             width: "100%", maxWidth: 343, height: 51, borderRadius: T.radius.circle,
             backgroundColor: T.color.primary, color: T.color.white,
             border: "none", cursor: "pointer",
@@ -4016,6 +4037,102 @@ function FundPageSupporterShare({ data, onBack }) {
           </button>
         </div>
       </div>
+
+      {/* Share Modal Overlay */}
+      {showShareModal && (
+        <div
+          onClick={() => setShowShareModal(false)}
+          style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.4)", zIndex: 1000,
+            display: "flex", alignItems: "flex-end", justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%", maxWidth: 375, backgroundColor: T.color.white,
+              borderRadius: "24px 24px 0 0", padding: "24px 16px 40px",
+              display: "flex", flexDirection: "column", gap: 20,
+              boxSizing: "border-box",
+              animation: "slideUp 0.25s ease",
+            }}
+          >
+            <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+            <div style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: T.color.neutral300, alignSelf: "center" }} />
+            <h3 style={{
+              fontFamily: T.font.heading, fontWeight: 500, fontSize: 20, lineHeight: 1.4,
+              color: T.color.primary, margin: 0, textAlign: "center",
+            }}>
+              Share this fund
+            </h3>
+            <div style={{
+              backgroundColor: "rgba(143,143,143,0.1)", borderRadius: 8, padding: "12px 16px",
+              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+            }}>
+              <span style={{
+                fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: T.color.neutral700,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
+              }}>
+                {fundUrl}
+              </span>
+              <button onClick={handleCopyLink} style={{
+                backgroundColor: linkCopied ? T.color.green : T.color.white,
+                border: `2px solid ${linkCopied ? T.color.green : "#d6ff76"}`,
+                borderRadius: T.radius.circle, padding: "6px 12px", cursor: "pointer",
+                fontFamily: T.font.body, fontSize: 12, fontWeight: 400, lineHeight: 1.4,
+                color: T.color.primary, whiteSpace: "nowrap",
+                transition: "all 0.2s ease",
+              }}>
+                {linkCopied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <button onClick={() => {
+                window.open(`sms:?body=${encodeURIComponent(`${message}\n\n${fundUrl}`)}`, "_blank");
+                setShowShareModal(false);
+              }} style={{
+                width: "100%", height: 51, borderRadius: T.radius.circle,
+                backgroundColor: T.color.primary, color: T.color.white,
+                border: "none", cursor: "pointer",
+                fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Send via text
+              </button>
+              <button onClick={() => {
+                const subject = encodeURIComponent(`Support ${displayName} on Summa`);
+                const body = encodeURIComponent(`${message}\n\nCheck it out here: ${fundUrl}`);
+                window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
+                setShowShareModal(false);
+              }} style={{
+                width: "100%", height: 51, borderRadius: T.radius.circle,
+                backgroundColor: "transparent", color: T.color.primary,
+                border: `2px solid ${T.color.primary}`, cursor: "pointer",
+                fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points="22,6 12,13 2,6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Send via email
+              </button>
+            </div>
+            <button onClick={() => setShowShareModal(false)} style={{
+              background: "none", border: "none", cursor: "pointer",
+              fontFamily: T.font.body, fontSize: 16, lineHeight: 1.6,
+              color: T.color.primary, textDecoration: "underline", padding: 0,
+              alignSelf: "center",
+            }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
