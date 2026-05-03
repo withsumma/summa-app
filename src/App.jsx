@@ -5163,12 +5163,13 @@ function GuardianReviewFund({ data, setData, goTo }) {
 // Landing page image assets
 const LANDING_IMAGES = {
   heroBg: "/summa-hero.png",
+  sampleImage1: "/assets/home/sample-image-1.png",
   providers: {
-    nySociety: "https://www.figma.com/api/mcp/asset/b7535dc8-7585-4cf9-aa44-31a3e10eeb60",
-    devoreDance: "https://www.figma.com/api/mcp/asset/f5ca2262-b600-4d4b-9457-fd147137a59e",
-    bricks4kids: "https://www.figma.com/api/mcp/asset/991191a5-5765-46ac-923d-2c58094fc145",
-    whyHateMath: "https://www.figma.com/api/mcp/asset/ef6efa65-f1dc-49e0-bd87-cffb99867095",
-    binnsMartial: "https://www.figma.com/api/mcp/asset/8c6f9f31-2485-4fae-9450-95700e95542d",
+    nySociety: "/assets/home/card_nysocietyofplay.png",
+    devoreDance: "/assets/home/card_devorcedance.png",
+    bricks4kids: "/assets/home/card_bricks.png",
+    whyHateMath: "/assets/home/card_whyhatesmath.png",
+    binnsMartial: "/assets/home/card_binns.png",
   },
 };
 
@@ -5566,7 +5567,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
             alignSelf: isDesktop ? undefined : "center",
           }}>
             <img
-              src="https://www.figma.com/api/mcp/asset/fca59069-6243-4faa-a2af-1ebc39e80a1d"
+              src={LANDING_IMAGES.sampleImage1}
               alt="Summa fund page preview"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
