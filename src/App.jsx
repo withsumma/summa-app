@@ -5424,7 +5424,7 @@ function LandingPage({ onStart, onLogin, onPrivacy, onTerms }) {
               Summa makes it easy to set up a page, share it with your community, and turn your child&rsquo;s aspirations into achievements.
             </p>
           </div>
-          <button onClick={() => setShowPreAlpha(true)} style={{
+          <button onClick={() => setShowSignUp(true)} style={{
             backgroundColor: "#fff", border: "none", borderRadius: 999,
             padding: "24px 32px", cursor: "pointer",
             fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.2,
