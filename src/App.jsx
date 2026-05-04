@@ -2450,10 +2450,10 @@ function FundPageSupporter({ data, goTo, goHome, isSignedIn }) {
   const confirmed = data.supporterContribution || 0;
   const pending = data.pendingContribution || 0;
   const raised = confirmed + pending;
-  const raisedFormatted = `$${confirmed.toLocaleString()}`;
+  const raisedFormatted = `$${raised.toLocaleString()}`;
   const confirmedPct = goalNum > 0 ? Math.min((confirmed / goalNum) * 100, 100) : 0;
   const totalPct = goalNum > 0 ? Math.min((raised / goalNum) * 100, 100) : 0;
-  const progressPct = confirmedPct;
+  const progressPct = totalPct;
   const displayName = data.title || "My Summa Fund";
   // Organizer is always the account creator, not the beneficiary
   const organizer = data.firstName
@@ -4154,12 +4154,11 @@ function GuardianHome({ data, setData, goTo, goHome, isSignedIn, refreshKey }) {
         setLoadingFunds(false);
         return;
       }
-      // For each fund, fetch contributions to get accurate totals (only confirmed)
+      // For each fund, fetch contributions to get accurate totals (confirmed + pending)
       const enriched = await Promise.all(fetchedFunds.map(async (fund) => {
         const { contributions } = await getContributions(fund.id);
         const active = (contributions || []).filter(c => c.status !== "rejected");
-        const confirmedOnly = active.filter(c => c.status === "confirmed");
-        const totalRaised = confirmedOnly.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+        const totalRaised = active.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
         const count = active.length;
         return { ...fund, raised_amount: totalRaised, supporter_count: count };
       }));
@@ -4892,6 +4891,7 @@ function GuardianReviewFund({ data, setData, goTo }) {
   const confirmedPct = goalNum > 0 ? Math.min((confirmed / goalNum) * 100, 100) : 0;
 
   const donations = data.donations || [];
+  const [rejectConfirmId, setRejectConfirmId] = useState(null);
 
   const handleConfirm = async (donationId) => {
     // Persist to Supabase
@@ -4910,7 +4910,7 @@ function GuardianReviewFund({ data, setData, goTo }) {
     }));
   };
 
-  const handleIgnore = async (donationId) => {
+  const handleRejectConfirmed = async (donationId) => {
     // Persist to Supabase
     await updateContributionStatus(donationId, "rejected");
 
@@ -4924,6 +4924,7 @@ function GuardianReviewFund({ data, setData, goTo }) {
       donations: updated,
       pendingContribution: Math.max(0, (prev.pendingContribution || 0) - ignoreAmount),
     }));
+    setRejectConfirmId(null);
   };
 
   return (
@@ -5107,7 +5108,7 @@ function GuardianReviewFund({ data, setData, goTo }) {
                     Confirm you've received
                   </button>
                   <button
-                    onClick={() => handleIgnore(donation.id)}
+                    onClick={() => setRejectConfirmId(donation.id)}
                     style={{
                       backgroundColor: T.color.white, border: "2px solid #d6ff76",
                       borderRadius: 4, padding: "8px 16px", cursor: "pointer",
@@ -5115,7 +5116,7 @@ function GuardianReviewFund({ data, setData, goTo }) {
                       color: T.color.primary,
                     }}
                   >
-                    Ignore
+                    I didn't receive this
                   </button>
                 </div>
               ) : donation.ignored ? (
@@ -5123,7 +5124,7 @@ function GuardianReviewFund({ data, setData, goTo }) {
                   fontFamily: T.font.body, fontSize: 12, fontWeight: 500, lineHeight: 1.4,
                   color: T.color.neutral700,
                 }}>
-                  Ignored
+                  Removed
                 </span>
               ) : (
                 <div style={{
@@ -5152,6 +5153,58 @@ function GuardianReviewFund({ data, setData, goTo }) {
           </div>
         ))}
       </div>
+
+      {/* Rejection confirmation modal */}
+      {rejectConfirmId && (
+        <div
+          onClick={() => setRejectConfirmId(null)}
+          style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.4)", zIndex: 1000,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: 24,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              backgroundColor: T.color.white, borderRadius: 16,
+              padding: 32, maxWidth: 340, width: "100%",
+              display: "flex", flexDirection: "column", gap: 16, alignItems: "center",
+              textAlign: "center",
+            }}
+          >
+            <p style={{ fontFamily: T.font.body, fontSize: 16, fontWeight: 500, lineHeight: 1.4, color: T.color.primary, margin: 0 }}>
+              Are you sure you didn't receive this contribution?
+            </p>
+            <p style={{ fontFamily: T.font.body, fontSize: 14, lineHeight: 1.4, color: T.color.neutral700, margin: 0 }}>
+              This will remove the amount from your fund's total.
+            </p>
+            <div style={{ display: "flex", gap: 12, width: "100%", marginTop: 8 }}>
+              <button
+                onClick={() => setRejectConfirmId(null)}
+                style={{
+                  flex: 1, backgroundColor: T.color.white, border: `2px solid ${T.color.neutral300}`,
+                  borderRadius: 8, padding: "12px 16px", cursor: "pointer",
+                  fontFamily: T.font.body, fontSize: 14, fontWeight: 500, color: T.color.primary,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleRejectConfirmed(rejectConfirmId)}
+                style={{
+                  flex: 1, backgroundColor: "#fee2e2", border: "2px solid #fca5a5",
+                  borderRadius: 8, padding: "12px 16px", cursor: "pointer",
+                  fontFamily: T.font.body, fontSize: 14, fontWeight: 500, color: "#991b1b",
+                }}
+              >
+                Yes, remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -6918,16 +6971,18 @@ export default function SummaFundSetup() {
         if (fund) {
           // Fetch contributions for this fund to show activity feed
           const { contributions } = await getContributions(fund.id);
-          const confirmedDonations = (contributions || [])
-            .filter(c => c.status === "confirmed")
+          const activeDonations = (contributions || [])
+            .filter(c => c.status !== "rejected")
             .map(c => ({
               id: c.id,
               name: c.supporter_name || "Anonymous",
               amount: Number(c.amount) || 0,
               message: c.message || "",
               time: new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+              confirmed: c.status === "confirmed",
             }));
-          const totalRaised = confirmedDonations.reduce((s, d) => s + d.amount, 0);
+          const confirmedTotal = activeDonations.filter(d => d.confirmed).reduce((s, d) => s + d.amount, 0);
+          const pendingTotal = activeDonations.filter(d => !d.confirmed).reduce((s, d) => s + d.amount, 0);
           // Hydrate app state with the fund data from Supabase
           setData({
             fundId: fund.id,
@@ -6944,9 +6999,10 @@ export default function SummaFundSetup() {
             coverImage: fund.cover_photo_url || null,
             coverImagePosition: fund.cover_image_position || { x: 50, y: 50 },
             contentBlocks: fund.content_blocks || [],
-            supporterContribution: totalRaised,
-            supporterCount: confirmedDonations.length,
-            donations: confirmedDonations,
+            supporterContribution: confirmedTotal,
+            pendingContribution: pendingTotal,
+            supporterCount: activeDonations.length,
+            donations: activeDonations,
           });
           setLoading(false);
           // Skip start screen, go directly to supporter fund page
